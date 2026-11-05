@@ -19,8 +19,8 @@ Living status document: what is done, what is next, decisions and known issues.
 | 1 | Prisma data model + seed | ✅ done |
 | 2 | CMS / admin panel (`/admin`) | ✅ done |
 | 3 | Storefront | ✅ done |
-| 4 | Cart and checkout | ⏳ next |
-| 5 | Quality: tests, e2e, final pass | ☐ |
+| 4 | Cart and checkout | ✅ done |
+| 5 | Quality: tests, e2e, final pass | ⏳ next |
 
 ## Decisions
 
@@ -107,6 +107,27 @@ Routes (all under `/cs` and `/en`): `/` home, `/category/[slug]`, `/product/[slu
 - **Favourites & compare:** ids in localStorage (`src/components/store/client-store.ts`); compare page groups by
   category with a shared spec table and "differences only".
 - **Images:** `next/image`; generated SVG placeholders are served unoptimized, uploads are optimized.
+
+## Cart and checkout (Phase 4)
+
+- **Cart** (`/cart`): lines `{variantId, qty}` in localStorage; prices, names, images and stock are re-quoted on the
+  server (`quoteCart`) in the visitor's currency. Quantity steppers capped by stock, stock/unavailable warnings with
+  "set to available" fix, free-shipping progress bar, totals via the pure `computeTotals` (`src/lib/cart.ts`).
+- **Checkout** (`/checkout`): guest checkout — contact, address (CZ/SK/DE/AT/PL), shipping method from Settings with
+  prices and free-from thresholds in the active currency, payment method from the `PaymentProvider` registry
+  (COD disabled when the shipping method doesn't allow it), note, consent. Same Zod schema client + server
+  (`checkoutSchema`). Contact details are remembered in localStorage as a convenience.
+- **Order creation** (`src/lib/orders/create-order.ts`): one transaction — server-side re-pricing (`planOrder`),
+  stock check, conditional decrement (`updateMany … stock >= qty`, so concurrent orders cannot oversell), snapshot
+  of product name, variant label, SKU, image, unit price and currency, customer upsert, order number from `Counter`,
+  status history, `soldCount` + aggregates. Then the payment provider is initiated and the confirmation e-mail is
+  sent through the `Mailer` (console in dev, includes bank-transfer instructions).
+- **Payments** (`src/lib/payments`): `bank_transfer` (variable symbol = order number) and `cod` work without keys;
+  `stripe` (hosted Checkout via REST, no SDK) only when `STRIPE_SECRET_KEY` is set. Return URL confirms the session
+  server-side; `/api/stripe/webhook` verifies `STRIPE_WEBHOOK_SECRET` signatures and marks orders paid.
+- **Confirmation** (`/order/[number]?token=…`): requires the per-order secret token (no enumeration), shows status,
+  payment instructions, items and address.
+- **Status e-mails:** changing an order's status in the CMS e-mails the customer (`sendOrderStatusEmail`).
 
 ## Known issues
 
