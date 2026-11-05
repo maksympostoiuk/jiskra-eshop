@@ -1,1 +1,16 @@
-{}
+{
+  "greeting": "Hello {name},",
+  "shipping": "Shipping",
+  "total": "Total",
+  "signature": "Thank you for shopping at Jiskra.\nThe Jiskra team",
+  "confirmation": {
+    "subject": "Order confirmation no. {number}",
+    "intro": "thank you for your order no. {number}. You will find a summary below.",
+    "link": "You can follow the status of your order here:"
+  },
+  "status": {
+    "subject": "Order no. {number}: {status}",
+    "intro": "the status of your order no. {number} has changed to: {status}."
+  },
+  "bankTransfer": "Bank transfer: account {account}, IBAN {iban}, payment reference {vs}, amount {amount}."
+}

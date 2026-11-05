@@ -1,1 +1,16 @@
-{}
+{
+  "greeting": "Dobrý den, {name},",
+  "shipping": "Doprava",
+  "total": "Celkem",
+  "signature": "Děkujeme, že nakupujete v Jiskře.\nTým Jiskra",
+  "confirmation": {
+    "subject": "Potvrzení objednávky č. {number}",
+    "intro": "děkujeme za vaši objednávku č. {number}. Shrnutí najdete níže.",
+    "link": "Stav objednávky můžete sledovat zde:"
+  },
+  "status": {
+    "subject": "Objednávka č. {number}: {status}",
+    "intro": "stav vaší objednávky č. {number} se změnil na: {status}."
+  },
+  "bankTransfer": "Platba převodem: číslo účtu {account}, IBAN {iban}, variabilní symbol {vs}, částka {amount}."
+}

@@ -5,5 +5,32 @@
   },
   "home": {
     "comingSoon": "Obchod se připravuje"
+  },
+  "orderStatus": {
+    "NEW": "Nová",
+    "CONFIRMED": "Potvrzená",
+    "PROCESSING": "Zpracovává se",
+    "SHIPPED": "Odeslaná",
+    "DELIVERED": "Doručená",
+    "CANCELLED": "Zrušená"
+  },
+  "paymentStatus": {
+    "PENDING": "Čeká na platbu",
+    "PAID": "Zaplaceno",
+    "FAILED": "Platba selhala",
+    "REFUNDED": "Vráceno"
+  },
+  "paymentMethod": {
+    "bank_transfer": "Bankovní převod",
+    "cod": "Dobírka",
+    "stripe": "Platební karta (Stripe)"
+  },
+  "optionName": {
+    "color": "Barva",
+    "storage": "Úložiště",
+    "memory": "Paměť",
+    "size": "Velikost",
+    "connectivity": "Připojení",
+    "edition": "Provedení"
   }
 }

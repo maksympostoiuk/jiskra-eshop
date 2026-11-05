@@ -17,8 +17,8 @@ Living status document: what is done, what is next, decisions and known issues.
 | --- | --- | --- |
 | 0 | Setup: Next.js, TS, Tailwind, Prisma, next-intl, Zod, Vitest, tokens, brand | ✅ done |
 | 1 | Prisma data model + seed | ✅ done |
-| 2 | CMS / admin panel (`/admin`) | ⏳ next |
-| 3 | Storefront | ☐ |
+| 2 | CMS / admin panel (`/admin`) | ✅ done |
+| 3 | Storefront | ⏳ next |
 | 4 | Cart and checkout | ☐ |
 | 5 | Quality: tests, e2e, final pass | ☐ |
 
@@ -55,6 +55,31 @@ prices in both currencies, free-from thresholds), Counter (order numbers).
   brands, 43 products / 123 variants, specs, 4 badges, 7 banners, ~120 reviews (some pending), 3 shipping methods,
   10 sample orders, admin user from `SEED_ADMIN_*`. The seed wipes existing data first.
 - Tests use a throwaway `prisma/test.db` recreated by `tests/global-setup.ts`.
+
+## CMS (Phase 2)
+
+`/admin` (not localized; CS/EN switch in the top bar stores `ADMIN_LOCALE`). Login at `/admin/login`.
+
+- **Auth:** own implementation — bcrypt (cost 12) password hashes, random 32-byte session token in an httpOnly
+  `admin_session` cookie, only its SHA-256 stored in `AdminSession` (7-day expiry). Middleware does a cheap cookie
+  presence check; `requireAdmin()` validates against the DB in the panel layout and in **every** server action.
+  Login is rate-limited in memory (5 attempts / 15 min per IP+e-mail) — single-node only.
+- **Roles:** ADMIN = everything; EDITOR cannot open/act on Admin users and Settings (`requireAdmin({ role: "ADMIN" })`).
+- **Sections:** dashboard (orders by status, revenue per currency all-time + 30 days, low stock, latest orders,
+  pending reviews), products, categories (tree, up/down reordering, cycle protection, delete blocked when non-empty),
+  brands, spec definitions, banners (placement + schedule), badges, reviews (approve/reject/delete → refreshes
+  product rating), orders (filters, detail, status transitions with history + e-mail, cancel restocks, payment
+  status), admin users, settings (USD rate + rounding, bulk "recalculate all USD prices", contacts, bank details,
+  shipping methods in both currencies).
+- **Product editor:** CS/EN tabs (name, auto-slug, short/long description, SEO), variant editor (choose attributes:
+  colour with swatch, storage, memory, …; SKU, price + old price in CZK/USD with per-field and bulk "fill USD from
+  CZK", stock), spec values driven by the category's (and ancestors') SpecDefinitions, image upload via `Storage`
+  with drag-and-drop (files and reordering) + keyboard arrow buttons, alt texts per language, colour-linked images,
+  badges, publish/draft, featured.
+- **Validation:** the same Zod schemas (`src/lib/validation/admin.ts`) run on the client before submit and on the
+  server; messages localized (Zod locales + `validation` namespace). Cross-record checks (unique slug per locale,
+  unique SKU, unique spec key) on the server. Deletes go through a confirmation `<dialog>`.
+- **Messages check:** `src/i18n/keys.test.ts` statically verifies that literal translation keys used in code exist.
 
 ## Known issues
 

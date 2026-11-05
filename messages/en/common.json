@@ -5,5 +5,32 @@
   },
   "home": {
     "comingSoon": "The shop is being set up"
+  },
+  "orderStatus": {
+    "NEW": "New",
+    "CONFIRMED": "Confirmed",
+    "PROCESSING": "Processing",
+    "SHIPPED": "Shipped",
+    "DELIVERED": "Delivered",
+    "CANCELLED": "Cancelled"
+  },
+  "paymentStatus": {
+    "PENDING": "Awaiting payment",
+    "PAID": "Paid",
+    "FAILED": "Payment failed",
+    "REFUNDED": "Refunded"
+  },
+  "paymentMethod": {
+    "bank_transfer": "Bank transfer",
+    "cod": "Cash on delivery",
+    "stripe": "Card payment (Stripe)"
+  },
+  "optionName": {
+    "color": "Colour",
+    "storage": "Storage",
+    "memory": "Memory",
+    "size": "Size",
+    "connectivity": "Connectivity",
+    "edition": "Edition"
   }
 }
