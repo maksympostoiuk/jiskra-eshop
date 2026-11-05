@@ -27,3 +27,6 @@ blob-report/
 
 .DS_Store
 *.log
+
+# local scratch (mail outbox etc.)
+tmp/

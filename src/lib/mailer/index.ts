@@ -1,16 +1,27 @@
 import { ConsoleMailer } from "./console";
+import { FileMailer, SmtpMailer } from "./transports";
 import type { Mailer } from "./types";
 
 let instance: Mailer | null = null;
 
-export function getMailer(): Mailer {
-  if (instance) return instance;
-  const from = process.env.MAIL_FROM || "Jiskra <obchod@jiskra.local>";
-  switch (process.env.MAILER ?? "console") {
-    // Add real transports here (SMTP, Postmark, …) — they only need to implement `Mailer`.
+/** MAILER=console (default) | smtp (needs SMTP_URL) | file (needs MAIL_OUTBOX). */
+export function createMailer(env: Record<string, string | undefined> = process.env): Mailer {
+  const from = env.MAIL_FROM || "Jiskra <obchod@jiskra.local>";
+  switch (env.MAILER ?? "console") {
+    case "smtp":
+      if (!env.SMTP_URL) throw new Error("MAILER=smtp requires SMTP_URL");
+      return new SmtpMailer(env.SMTP_URL, from);
+    case "file":
+      return new FileMailer(env.MAIL_OUTBOX || "tmp/mail-outbox.jsonl", from);
+    case "console":
+      return new ConsoleMailer(from);
     default:
-      instance = new ConsoleMailer(from);
+      throw new Error(`Unknown MAILER "${env.MAILER}"`);
   }
+}
+
+export function getMailer(): Mailer {
+  instance ??= createMailer();
   return instance;
 }
 

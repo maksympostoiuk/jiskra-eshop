@@ -10,8 +10,12 @@ const env = {
   SEED_ADMIN_PASSWORD: "e2e-admin-password",
   SEED_ADMIN_NAME: "E2E Admin",
   PRISMA_HIDE_UPDATE_MESSAGE: "1",
+  // E-mails go to a file so tests can follow verification / reset links.
+  MAILER: "file",
+  MAIL_OUTBOX: "tmp/e2e-outbox.jsonl",
+  NEXT_PUBLIC_SITE_URL: `http://localhost:${process.env.E2E_PORT ?? "3200"}`,
 };
-for (const f of ["prisma/e2e.db", "prisma/e2e.db-journal"]) rmSync(f, { force: true });
+for (const f of ["prisma/e2e.db", "prisma/e2e.db-journal", "tmp/e2e-outbox.jsonl"]) rmSync(f, { force: true });
 execSync("npx prisma db push --skip-generate", { stdio: "inherit", env });
 execSync("npx prisma db seed", { stdio: "inherit", env });
 const server = spawn("npx", ["next", "start", "-p", process.env.E2E_PORT ?? "3200"], { stdio: "inherit", env });

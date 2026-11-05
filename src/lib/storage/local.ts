@@ -1,29 +1,41 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import { join, normalize, sep } from "node:path";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { dirname, join, normalize, sep } from "node:path";
 import { randomToken } from "@/lib/random";
 import { sniffImageType } from "./sniff";
-import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES, type Storage, type UploadInput } from "./types";
+import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES, newUploadKey, uploadKey, type Storage, type UploadInput } from "./types";
 
 export const UPLOAD_ROOT = join(process.cwd(), "public", "uploads");
 
-/** Saves files to public/uploads/<yyyy>/<mm>/<random>.<ext> and returns "/uploads/..." URLs. */
+/** Validates an upload (size, real type by magic bytes) and returns its extension. Shared by all backends. */
+export function checkUpload(input: UploadInput): { ext: string; contentType: string } {
+  if (input.data.byteLength > MAX_UPLOAD_BYTES) throw new Error("FILE_TOO_LARGE");
+  // Trust the bytes, not the client-declared MIME type.
+  const sniffed = sniffImageType(input.data);
+  const ext = sniffed ? ALLOWED_IMAGE_TYPES[sniffed] : undefined;
+  if (!sniffed || !ext || sniffed !== input.contentType) throw new Error("UNSUPPORTED_TYPE");
+  return { ext, contentType: sniffed };
+}
+
+/** Dev storage: files in public/uploads/<yyyy>/<mm>/<random>.<ext>. */
 export class LocalDiskStorage implements Storage {
   async save(input: UploadInput) {
-    // Trust the bytes, not the client-declared MIME type.
-    const sniffed = sniffImageType(input.data);
-    const ext = sniffed ? ALLOWED_IMAGE_TYPES[sniffed] : undefined;
-    if (!sniffed || !ext || sniffed !== input.contentType) throw new Error("UNSUPPORTED_TYPE");
-    if (input.data.byteLength > MAX_UPLOAD_BYTES) throw new Error("FILE_TOO_LARGE");
-    const now = new Date();
-    const dir = join(String(now.getFullYear()), String(now.getMonth() + 1).padStart(2, "0"));
-    await mkdir(join(UPLOAD_ROOT, dir), { recursive: true });
-    const name = `${randomToken(12)}.${ext}`;
-    await writeFile(join(UPLOAD_ROOT, dir, name), input.data);
-    return { url: `/uploads/${dir.split(sep).join("/")}/${name}`, size: input.data.byteLength, contentType: sniffed };
+    const { ext, contentType } = checkUpload(input);
+    const key = newUploadKey(ext, randomToken(12));
+    const path = resolveUploadPath(key.split("/"))!;
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, input.data);
+    return { url: `/uploads/${key}`, size: input.data.byteLength, contentType };
+  }
+
+  async read(key: string) {
+    const path = resolveUploadPath(key.split("/"));
+    if (!path) return null;
+    return readFile(path).then((b) => new Uint8Array(b)).catch(() => null);
   }
 
   async delete(url: string) {
-    const path = resolveUploadPath(url.replace(/^\/uploads\//, "").split("/"));
+    const key = uploadKey(url);
+    const path = key ? resolveUploadPath(key.split("/")) : null;
     if (path) await unlink(path).catch(() => undefined);
   }
 }

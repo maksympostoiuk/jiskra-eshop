@@ -24,6 +24,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1162.0",
     "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource-variable/inter": "^5.3.0",
     "@prisma/client": "^6.19.3",
@@ -32,6 +33,7 @@
     "lucide-react": "^1.68.0",
     "next": "^15.5.29",
     "next-intl": "^4.14.9",
+    "nodemailer": "^7.0.13",
     "react": "^19.1.10",
     "react-dom": "^19.1.10",
     "server-only": "^0.0.1",
@@ -44,6 +46,7 @@
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.4",
     "@types/node": "^22.20.5",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "19.1",
     "@types/react-dom": "19.1",
     "eslint": "^9.39.5",
