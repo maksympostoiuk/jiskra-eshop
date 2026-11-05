@@ -47,7 +47,7 @@ export function BrandEditor({ brandId, initial }: { brandId: string | null; init
       <Message message={message} />
       <Card className="grid max-w-3xl gap-4 p-5 md:grid-cols-2">
         <Field id="name" label={t("name")} error={errors.name} required>
-          <Input {...fieldAria("name", errors.name)} value={form.name} onChange={(e) => patch({ name: e.target.value, slug: !form.slug || form.slug === slugify(form.name) ? slugify(e.target.value) : form.slug })} />
+          <Input {...fieldAria("name", errors.name)} value={form.name} onChange={(e) => patch({ name: e.target.value, slug: !form.slug || (!brandId && form.slug === slugify(form.name)) ? slugify(e.target.value) : form.slug })} />
         </Field>
         <Field id="slug" label={t("slug")} error={errors.slug} required>
           <Input {...fieldAria("slug", errors.slug)} value={form.slug} onChange={(e) => patch({ slug: e.target.value })} />

@@ -148,10 +148,11 @@ export function ProductHero({
                 <dd>{s.value}</dd>
               </div>
             ))}
-            <div>
-              <a href="#specs" className="text-sm font-medium text-brand hover:underline">{t("allSpecs")}</a>
-            </div>
           </dl>
+        )}
+
+        {keySpecs.length > 0 && (
+          <a href="#specs" className="-mt-3 w-fit text-sm font-medium text-brand hover:underline">{t("allSpecs")}</a>
         )}
 
         {optionGroups.map((group) => {

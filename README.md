@@ -18,6 +18,8 @@ npm run db:seed             # demo catalogue + admin user
 npm run dev                 # http://localhost:3000 → redirects to /cs
 ```
 
+Then open http://localhost:3000/cs (storefront) and http://localhost:3000/admin (CMS).
+
 The admin panel lives at `/admin` (credentials = `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `.env`).
 
 ## Scripts
@@ -29,7 +31,8 @@ The admin panel lives at `/admin` (credentials = `SEED_ADMIN_EMAIL` / `SEED_ADMI
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm test` | Vitest unit + integration tests (uses a throwaway `prisma/test.db`) |
-| `npm run test:e2e` | Playwright end-to-end tests (starts the app itself) |
+| `npm run test:e2e` | Playwright e2e + axe accessibility tests (run `npm run build` first; uses its own `prisma/e2e.db` on port 3200) |
+| `npm run check` | typecheck + lint + unit tests + build |
 | `npm run db:reset` | Drop, recreate and reseed the dev database |
 
 ## Project layout

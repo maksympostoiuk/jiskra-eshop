@@ -9,18 +9,26 @@ import { countActiveFilters, pricePresets, serializeFilters, SORTS, toggleValue,
 import { formatMoney, type Currency } from "@/lib/money";
 import type { Facets } from "@/server/catalog";
 
-/** Navigate to the same page with new filters, keeping extra params such as the search query. */
-function useApplyFilters(extra: Record<string, string>) {
+/**
+ * Navigate to the same page with new filters (keeping extra params such as the search query).
+ * Filters are applied optimistically so controls react immediately while the page re-renders.
+ */
+function useFilters(serverFilters: CatalogFilters, extra: Record<string, string>) {
   const router = useRouter();
   const pathname = usePathname();
   const [pending, start] = useTransition();
+  const serverKey = serializeFilters(serverFilters) + JSON.stringify(serverFilters.view);
+  const [state, setState] = useState({ key: serverKey, filters: serverFilters });
+  // Reset to the server state whenever the URL-derived filters change.
+  if (state.key !== serverKey) setState({ key: serverKey, filters: serverFilters });
   const apply = (next: CatalogFilters) => {
+    setState({ key: serverKey, filters: next });
     const q = new URLSearchParams(serializeFilters(next));
     for (const [k, v] of Object.entries(extra)) if (v) q.set(k, v);
     const s = q.toString();
     start(() => router.push(s ? `${pathname}?${s}` : pathname, { scroll: false }));
   };
-  return { apply, pending };
+  return { filters: state.filters, apply, pending };
 }
 
 function Section({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
@@ -48,10 +56,10 @@ function CheckRow({ checked, onChange, label, count }: { checked: boolean; onCha
   );
 }
 
-export function FilterPanel({ facets, filters, currency, extra = {} }: { facets: Facets; filters: CatalogFilters; currency: Currency; extra?: Record<string, string> }) {
+export function FilterPanel({ facets, filters: serverFilters, currency, extra = {} }: { facets: Facets; filters: CatalogFilters; currency: Currency; extra?: Record<string, string> }) {
   const t = useTranslations("catalog.filters");
   const locale = useLocale();
-  const { apply, pending } = useApplyFilters(extra);
+  const { filters, apply, pending } = useFilters(serverFilters, extra);
   const [drawer, setDrawer] = useState(false);
   const [pmin, setPmin] = useState(filters.priceMin !== null ? String(filters.priceMin / 100) : "");
   const [pmax, setPmax] = useState(filters.priceMax !== null ? String(filters.priceMax / 100) : "");
@@ -162,9 +170,9 @@ export function FilterPanel({ facets, filters, currency, extra = {} }: { facets:
   );
 }
 
-export function ListingToolbar({ filters, total, extra = {} }: { filters: CatalogFilters; total: number; extra?: Record<string, string> }) {
+export function ListingToolbar({ filters: serverFilters, total, extra = {} }: { filters: CatalogFilters; total: number; extra?: Record<string, string> }) {
   const t = useTranslations("catalog");
-  const { apply, pending } = useApplyFilters(extra);
+  const { filters, apply, pending } = useFilters(serverFilters, extra);
   return (
     <div className={cn("flex flex-wrap items-center gap-3", pending && "opacity-60")}>
       <p className="mr-auto text-sm text-ink-soft" aria-live="polite">{t("results", { count: total })}</p>

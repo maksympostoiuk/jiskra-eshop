@@ -63,7 +63,7 @@ export function CategoryEditor({
                     <Input
                       {...fieldAria(`${p}.name`, errors[`${p}.name`])}
                       value={tr.name}
-                      onChange={(e) => setTr({ name: e.target.value, slug: !tr.slug || tr.slug === slugify(tr.name) ? slugify(e.target.value) : tr.slug })}
+                      onChange={(e) => setTr({ name: e.target.value, slug: !tr.slug || (!categoryId && tr.slug === slugify(tr.name)) ? slugify(e.target.value) : tr.slug })}
                     />
                   </Field>
                   <Field id={`${p}.slug`} label={t("slug")} error={errors[`${p}.slug`]} required>

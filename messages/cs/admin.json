@@ -112,7 +112,7 @@
     "viewInShop": "Zobrazit v obchodě",
     "content": "Obsah",
     "slug": "Slug (URL)",
-    "slugHint": "Vyplní se automaticky z názvu.",
+    "slugHint": "U nového produktu se vyplní z názvu. Změna slugu u existujícího produktu změní jeho adresu.",
     "shortDescription": "Krátký popis",
     "description": "Popis",
     "descriptionHint": "Odstavce oddělte prázdným řádkem.",

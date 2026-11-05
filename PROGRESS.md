@@ -20,7 +20,7 @@ Living status document: what is done, what is next, decisions and known issues.
 | 2 | CMS / admin panel (`/admin`) | ✅ done |
 | 3 | Storefront | ✅ done |
 | 4 | Cart and checkout | ✅ done |
-| 5 | Quality: tests, e2e, final pass | ⏳ next |
+| 5 | Quality: tests, e2e, final pass | ✅ done |
 
 ## Decisions
 
@@ -129,7 +129,69 @@ Routes (all under `/cs` and `/en`): `/` home, `/category/[slug]`, `/product/[slu
   payment instructions, items and address.
 - **Status e-mails:** changing an order's status in the CMS e-mails the customer (`sendOrderStatusEmail`).
 
+## Quality (Phase 5)
+
+- **Vitest (86 tests):** money formatting/parsing, CZK→USD conversion + rounding modes, cart lines/totals/free
+  shipping, stock checks, filter query parsing/serialization/presets, variant selection, spec formatting, category
+  tree, product form round-trip, checkout/review validation incl. localized messages, payment providers + Stripe
+  signature verification, order planning, **order creation integration test** on `prisma/test.db`, message
+  catalogue parity (cs = en) and a static check that every literal translation key used in code exists.
+- **Playwright (16 tests, `tests/e2e`):** purchase flow (mega-menu → category → brand filter + sort → product →
+  colour/storage variant → cart quantity → checkout validation → order → confirmation, cart emptied), language vs
+  currency independence, search suggestions, mobile catalog/filter drawers + no horizontal scroll, CMS login
+  (wrong password), product edit visible in the storefront (stable slug, fill-USD), product validation, editor role
+  restrictions, order status history, and **axe WCAG 2.1 AA scans** (no serious/critical violations) of 7 pages.
+- Final pass: `tsc` clean, ESLint clean, `next build` passes.
+
+## How to run locally
+
+```bash
+npm install
+cp .env.example .env
+npm run db:push && npm run db:seed
+npm run dev            # http://localhost:3000/cs  ·  CMS: http://localhost:3000/admin
+npm run check          # typecheck, lint, unit tests, production build
+npm run test:e2e       # after `npm run build`
+```
+
+Admin login: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `.env` (defaults `admin@jiskra.local` /
+`change-me-please`). Order e-mails are printed in the dev-server console.
+
+## What to check manually in the browser
+
+1. Home `/cs`: hero + side banners, category circles, bestseller chips switch the grid, promo tiles, brand strip.
+2. Header: "Katalog" mega-menu (hover categories; Esc closes), search suggestions with ↑/↓/Enter, CS/EN and
+   CZK/USD switchers are independent and remembered after reload.
+3. Category `/cs/category/chytre-telefony`: tick filters (brand, RAM, OS, 5G, price presets), sort, list/grid —
+   the URL updates; copy the URL into a new tab → same result. Try the filter drawer on a phone-sized window.
+4. Product `/cs/product/nordvik-aurora-8-pro`: colour swatches swap the gallery, storage buttons show sold-out /
+   other-combination states, price + SKU + stock update; sticky sub-nav highlights sections; submit a review
+   (then approve it in CMS → Recenze and see the rating update).
+5. Favourites / compare icons on cards → `/cs/favorites`, `/cs/compare` ("differences only").
+6. Cart → checkout → place an order with bank transfer and with cash on delivery; check the console e-mail and the
+   confirmation page; verify stock decreased in CMS → Produkty.
+7. CMS: edit a product (tabs per language, add a variant, "fill USD", upload an image by drag & drop and reorder),
+   reorder categories, schedule a banner, change an order status (customer gets an e-mail; cancelling restocks),
+   create an EDITOR and confirm they can't open Settings/Admin users, change the USD rate + "recalculate".
+8. `/sitemap.xml`, `/robots.txt`, view-source of a product page (hreflang alternates, Product/BreadcrumbList JSON-LD).
+9. Optional Stripe: set `STRIPE_SECRET_KEY` (test key) → "Platební karta (Stripe)" appears at checkout; for webhooks
+   also set `STRIPE_WEBHOOK_SECRET` and forward events to `/api/stripe/webhook`.
+
+## Ideas / not implemented (outside the spec)
+
+- Customer accounts UI (the `Customer` model exists; guest checkout upserts customers by e-mail).
+- DNS-style bundles, warranty add-ons, instalment prices, user photo strip, news/blog cards.
+- Real mail transport and object storage (S3/R2) — add implementations of `Mailer` / `Storage`.
+- Facet counts are computed over the unfiltered category (not "disjunctive" counts per active filter).
+
 ## Known issues
 
+- Rate limiting (login, reviews, checkout) is in-memory → per server instance only.
+- Some admin searches (brand name, review text, order name) use plain `contains`, which is case-sensitive on
+  PostgreSQL; product search uses the normalized `searchText` column and is portable.
+- Spec TEXT facet values are per-locale strings, so `f_*` params are dropped when switching language.
+- Stripe was implemented against the documented REST API but not exercised with real keys in this environment.
+- `npm run db:reset` resets the dev database. Tests use
+  their own throwaway DB files (`prisma/test.db`, `prisma/e2e.db`).
 - `npm audit` reports advisories in dev-only tooling (vitest's tinypool) and in the postcss copy bundled
   inside Next 15.5; no runtime exposure for this app. Revisit when upgrading majors.

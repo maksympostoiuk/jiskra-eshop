@@ -106,7 +106,8 @@ export function ProductEditor({
 
   const onNameChange = (loc: "cs" | "en", name: string) => {
     const tr = form.translations[loc];
-    const autoSlug = !tr.slug || tr.slug === slugify(tr.name);
+    // Auto-slug only for new products (or an empty slug) so renaming never breaks existing URLs.
+    const autoSlug = !tr.slug || (!productId && tr.slug === slugify(tr.name));
     set("translations", { ...form.translations, [loc]: { ...tr, name, slug: autoSlug ? slugify(name) : tr.slug } });
   };
 

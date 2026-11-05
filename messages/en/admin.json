@@ -100,7 +100,7 @@
     "viewInShop": "View in shop",
     "content": "Content",
     "slug": "Slug (URL)",
-    "slugHint": "Filled in automatically from the name.",
+    "slugHint": "Filled from the name for new products. Changing the slug of an existing product changes its URL.",
     "shortDescription": "Short description",
     "description": "Description",
     "descriptionHint": "Separate paragraphs with an empty line.",

@@ -15,7 +15,7 @@ export function FavoriteButton({ productId, className, withLabel = false }: { pr
     <button
       type="button"
       aria-pressed={active}
-      aria-label={active ? t("removeFavorite") : t("addFavorite")}
+      aria-label={withLabel ? undefined : active ? t("removeFavorite") : t("addFavorite")}
       title={active ? t("removeFavorite") : t("addFavorite")}
       onClick={() => favoritesStore.set((list) => toggleId(list, productId))}
       className={cn("inline-flex items-center justify-center gap-2 rounded-full transition-colors", active ? "text-sale" : "text-ink-soft hover:text-ink", className)}
@@ -35,7 +35,7 @@ export function CompareButton({ productId, className, withLabel = false }: { pro
     <button
       type="button"
       aria-pressed={active}
-      aria-label={active ? t("removeCompare") : t("addCompare")}
+      aria-label={withLabel ? undefined : active ? t("removeCompare") : t("addCompare")}
       title={active ? t("removeCompare") : t("addCompare")}
       onClick={() => {
         compareStore.set((l) => toggleId(l, productId));

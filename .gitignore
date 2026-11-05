@@ -22,6 +22,7 @@ public/uploads/*
 # test output
 playwright-report/
 test-results/
+prisma/e2e.db*
 blob-report/
 
 .DS_Store
