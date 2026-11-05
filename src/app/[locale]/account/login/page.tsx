@@ -28,6 +28,8 @@ export default async function LoginPage({ params, searchParams }: { params: Prom
       }
     >
       {verify === "invalid" && <Alert tone="error" className="mb-4">{t("login.verifyInvalid")}</Alert>}
+      {verify === "ok" && <Alert tone="success" className="mb-4">{t("login.verifyOk")}</Alert>}
+      {verify === "reset" && <Alert tone="success" className="mb-4">{t("reset.done")}</Alert>}
       <LoginForm next={next} />
       <Link href="/account/forgot" className="mt-4 inline-block text-sm text-ink-soft hover:text-ink hover:underline">{t("login.forgot")}</Link>
     </AuthCard>

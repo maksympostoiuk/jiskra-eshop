@@ -38,8 +38,13 @@ test("register, verify e-mail, see orders, reset password", async ({ page }) => 
   await page.getByRole("button", { name: "Přihlásit se" }).click();
   await expect(page.getByText("Nejdřív prosím potvrďte e-mail")).toBeVisible();
 
+  // The link verifies the address but does not sign anyone in (login-CSRF protection)
   await page.goto(await lastLink(email));
-  await expect(page).toHaveURL(/\/cs\/account\?verified=1/);
+  await expect(page).toHaveURL(/\/cs\/account\/login\?verify=ok/);
+  await expect(page.getByText("E-mail je ověřený.")).toBeVisible();
+  await page.getByLabel("E-mail").fill(email);
+  await page.getByLabel("Heslo").fill("dlouhe-heslo-123");
+  await page.getByRole("button", { name: "Přihlásit se" }).click();
   await expect(page.getByRole("heading", { name: "Dobrý den, Petr" })).toBeVisible();
   await expect(page.getByText("Zatím jste u nás nenakupovali.")).toBeVisible();
 
@@ -68,7 +73,21 @@ test("register, verify e-mail, see orders, reset password", async ({ page }) => 
   await page.goto(await lastLink(email));
   await page.getByLabel("Nové heslo").fill("uplne-nove-heslo-9");
   await page.getByRole("button", { name: "Uložit heslo" }).click();
-  await expect(page.getByText("Heslo je změněné a jste přihlášeni.")).toBeVisible();
-  await page.goto("/cs/account");
+  await expect(page.getByText("Heslo je změněné.")).toBeVisible();
+  await page.getByLabel("E-mail").fill(email);
+  await page.getByLabel("Heslo").fill("dlouhe-heslo-123");
+  await page.getByRole("button", { name: "Přihlásit se" }).click();
+  await expect(page.getByText("Nesprávný e-mail nebo heslo.")).toBeVisible();
+  await page.getByLabel("Heslo").fill("uplne-nove-heslo-9");
+  await page.getByRole("button", { name: "Přihlásit se" }).click();
   await expect(page.getByRole("heading", { name: "Dobrý den, Petr" })).toBeVisible();
+});
+
+test("security headers are sent and the CMS cannot be framed", async ({ request }) => {
+  for (const path of ["/cs", "/admin/login"]) {
+    const res = await request.get(path);
+    expect(res.headers()["x-frame-options"]).toBe("DENY");
+    expect(res.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+    expect(res.headers()["x-content-type-options"]).toBe("nosniff");
+  }
 });

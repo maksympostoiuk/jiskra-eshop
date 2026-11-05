@@ -60,9 +60,9 @@ export async function resetAccountPassword(input: unknown): Promise<ActionResult
   const t = await getTranslations("account");
   const parsed = await validateInput(resetPasswordSchema, input);
   if (!parsed.success) return { ok: false, errors: parsed.errors };
+  // No automatic sign-in after a reset (same login-CSRF reasoning as e-mail verification).
   const customerId = await resetPassword(prisma, parsed.data.token, parsed.data.password);
   if (!customerId) return { ok: false, message: t("reset.invalid") };
-  await createCustomerSession(customerId);
   return { ok: true, message: t("reset.done") };
 }
 

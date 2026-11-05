@@ -2,7 +2,6 @@
   "title": "Můj účet",
   "greeting": "Dobrý den, {name}",
   "logout": "Odhlásit se",
-  "verified": "E-mail je ověřený a jste přihlášeni. Vítejte!",
   "working": "Pracuji…",
   "fields": {
     "email": "E-mail",
@@ -26,7 +25,8 @@
     "verifyInvalid": "Odkaz pro ověření je neplatný nebo vypršel. Zaregistrujte se prosím znovu.",
     "forgot": "Zapomněli jste heslo?",
     "noAccount": "Ještě nemáte účet?",
-    "register": "Zaregistrujte se"
+    "register": "Zaregistrujte se",
+    "verifyOk": "E-mail je ověřený. Teď se můžete přihlásit."
   },
   "register": {
     "title": "Registrace",
@@ -46,10 +46,9 @@
   "reset": {
     "title": "Nové heslo",
     "submit": "Uložit heslo",
-    "done": "Heslo je změněné a jste přihlášeni.",
+    "done": "Heslo je změněné. Přihlaste se prosím novým heslem.",
     "invalid": "Odkaz je neplatný nebo vypršel.",
-    "again": "Požádat o nový odkaz",
-    "toAccount": "Přejít na můj účet"
+    "again": "Požádat o nový odkaz"
   },
   "profile": {
     "title": "Osobní údaje",

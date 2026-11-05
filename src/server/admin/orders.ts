@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/session";
@@ -46,7 +47,7 @@ export async function changeOrderStatus(input: { orderId: string; toStatus: stri
     throw error;
   }
 
-  await sendOrderStatusEmail(orderId).catch((error) => console.error("Failed to send status e-mail", error));
+  after(() => sendOrderStatusEmail(orderId).catch((error) => console.error("Failed to send status e-mail", error)));
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/admin/orders");
   return { ok: true, message: t("statusChanged") };

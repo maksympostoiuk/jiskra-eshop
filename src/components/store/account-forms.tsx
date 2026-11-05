@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type * as z from "zod";
 import { Alert } from "@/components/ui/alert";
 import { Field, Input, fieldAria } from "@/components/ui/form";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { validateWith, type FieldErrors } from "@/lib/validation/i18n";
 import { customerLoginSchema, forgotPasswordSchema, profileSchema, registerSchema, resetPasswordSchema } from "@/lib/validation/store";
 import { forgotPassword, loginAccount, registerAccount, resetAccountPassword, updateProfile } from "@/server/account";
@@ -150,9 +150,8 @@ export function ResetForm({ token }: { token: string }) {
         hidden={{ token }}
         fields={[{ name: "password", label: t("fields.newPassword"), type: "password", autoComplete: "new-password", hint: t("fields.passwordHint") }]}
         submitLabel={t("reset.submit")}
-        onSuccess={() => router.refresh()}
+        onSuccess={() => router.push("/account/login?verify=reset")}
       />
-      <Link href="/account" className="mt-4 inline-block text-sm text-brand hover:underline">{t("reset.toAccount")}</Link>
     </>
   );
 }

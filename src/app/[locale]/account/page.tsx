@@ -4,7 +4,6 @@ import { Package } from "lucide-react";
 import { OrderStatusPill } from "@/components/admin/status-pills";
 import { ProfileForm } from "@/components/store/account-forms";
 import { Breadcrumbs } from "@/components/store/breadcrumbs";
-import { Alert } from "@/components/ui/alert";
 import { Link, redirect } from "@/i18n/navigation";
 import { getCustomer } from "@/lib/auth/customer-session";
 import { prisma } from "@/lib/db";
@@ -17,12 +16,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title"), robots: { index: false } };
 }
 
-export default async function AccountPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ verified?: string }> }) {
+export default async function AccountPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const customer = await getCustomer();
   if (!customer) return redirect({ href: { pathname: "/account/login", query: { next: "/account" } }, locale });
-  const { verified } = await searchParams;
   const t = await getTranslations("account");
   const tStatus = await getTranslations("common.orderStatus");
   const format = await getFormatter();
@@ -40,8 +38,7 @@ export default async function AccountPage({ params, searchParams }: { params: Pr
           <button type="submit" className="rounded-full border border-ink px-5 py-2 text-sm font-semibold hover:bg-ink hover:text-white">{t("logout")}</button>
         </form>
       </div>
-      {verified && <Alert tone="success" className="mt-6">{t("verified")}</Alert>}
-
+      
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_22rem]">
         <section aria-labelledby="orders-title">
           <h2 id="orders-title" className="mb-4 text-2xl">{t("orders.title")}</h2>

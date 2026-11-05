@@ -46,6 +46,7 @@ export async function submitReview(input: ReviewInput): Promise<ActionResult> {
 
 /** Product cards for ids kept in localStorage (favorites). */
 export async function getCardsForIds(ids: string[]): Promise<ProductCardData[]> {
+  if (!Array.isArray(ids)) return [];
   const clean = ids.filter((id) => typeof id === "string" && id.length <= 64).slice(0, 100);
   if (!clean.length) return [];
   const locale = await getLocale();
@@ -58,6 +59,7 @@ export type CompareGroup = { categoryId: string; categoryName: string; specLabel
 
 /** Products for the compare page, grouped by category with a common spec table. */
 export async function getCompareData(ids: string[]): Promise<CompareGroup[]> {
+  if (!Array.isArray(ids)) return [];
   const cards = await getCardsForIds(ids.slice(0, 12));
   if (!cards.length) return [];
   const locale = await getLocale();

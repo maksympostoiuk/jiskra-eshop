@@ -11,7 +11,8 @@ import { formatMoney, isCurrency } from "@/lib/money";
 import { retrieveStripeSession, sessionSettlesOrder } from "@/lib/payments/stripe";
 import { getSettings } from "@/server/settings";
 
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+// The URL carries the order access token: never index it and never leak it via the Referer header.
+export const metadata: Metadata = { robots: { index: false, follow: false }, referrer: "no-referrer" };
 
 function tokenMatches(expected: string, given: string | undefined): boolean {
   if (!given) return false;

@@ -2,7 +2,6 @@
   "title": "My account",
   "greeting": "Hello, {name}",
   "logout": "Sign out",
-  "verified": "Your e-mail is verified and you are signed in. Welcome!",
   "working": "Working…",
   "fields": {
     "email": "E-mail",
@@ -26,7 +25,8 @@
     "verifyInvalid": "The verification link is invalid or has expired. Please register again.",
     "forgot": "Forgot your password?",
     "noAccount": "No account yet?",
-    "register": "Register"
+    "register": "Register",
+    "verifyOk": "Your e-mail is verified. You can sign in now."
   },
   "register": {
     "title": "Create an account",
@@ -46,10 +46,9 @@
   "reset": {
     "title": "New password",
     "submit": "Save password",
-    "done": "Your password has been changed and you are signed in.",
+    "done": "Your password has been changed. Please sign in with the new password.",
     "invalid": "The link is invalid or has expired.",
-    "again": "Request a new link",
-    "toAccount": "Go to my account"
+    "again": "Request a new link"
   },
   "profile": {
     "title": "Personal details",

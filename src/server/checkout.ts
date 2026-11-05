@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { rateLimit } from "@/lib/auth/rate-limit";
@@ -135,6 +136,7 @@ export async function placeOrder(input: CheckoutInput): Promise<ActionResult<{ r
     console.error("Payment initiation failed", error);
   }
 
-  await sendOrderConfirmationEmail(order.id, instructions).catch((error) => console.error("Confirmation e-mail failed", error));
+  // Sent after the response so a slow mail server never delays the checkout.
+  after(() => sendOrderConfirmationEmail(order.id, instructions).catch((error) => console.error("Confirmation e-mail failed", error)));
   return { ok: true, data: { redirectUrl } };
 }
