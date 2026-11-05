@@ -43,6 +43,13 @@ describe("createOrder (integration)", () => {
     expect(await db.customer.count({ where: { email: contact.email } })).toBe(1);
   });
 
+  it("refuses the order when prices changed since the customer saw them", async () => {
+    await expect(
+      createOrder(db, { lines: [{ variantId, qty: 1 }], currency: "CZK", locale: "cs", contact, shippingMethodId: shippingId, paymentMethod: "cod", expectedTotal: 1 }),
+    ).rejects.toMatchObject({ code: "PRICE_CHANGED" });
+    expect((await db.productVariant.findUnique({ where: { id: variantId } }))?.stock).toBe(1);
+  });
+
   it("snapshots USD prices and English names for an English USD order", async () => {
     const order = await createOrder(db, { lines: [{ variantId, qty: 1 }], currency: "USD", locale: "en", contact, shippingMethodId: shippingId, paymentMethod: "cod" });
     expect(order).toMatchObject({ currency: "USD", itemsTotal: 8699, shippingPrice: 599, total: 9298, shippingMethodName: "Courier" });

@@ -13,7 +13,8 @@ import { Badges } from "./product-card";
 import { Stars } from "./rating";
 import { ShopImage } from "./shop-image";
 
-// The currently selected variant is shared with the sticky sub-navigation.
+// The currently selected variant is shared with the sticky sub-navigation. Variants are matched by id, so a
+// selection left over from a previously viewed product is never shown for another one.
 let selected: ProductVariantView | null = null;
 const listeners = new Set<() => void>();
 const selectedStore = {
@@ -24,8 +25,9 @@ const selectedStore = {
   subscribe: (l: () => void) => (listeners.add(l), () => listeners.delete(l)),
   get: () => selected,
 };
-export function useSelectedVariant(fallback: ProductVariantView): ProductVariantView {
-  return useSyncExternalStore(selectedStore.subscribe, () => selectedStore.get() ?? fallback, () => fallback);
+export function useSelectedVariant(fallback: ProductVariantView, variants: ProductVariantView[]): ProductVariantView {
+  const current = useSyncExternalStore(selectedStore.subscribe, selectedStore.get, () => null);
+  return (current && variants.find((v) => v.id === current.id)) || fallback;
 }
 
 const LOW_STOCK = 5;
@@ -263,10 +265,10 @@ export function ProductHero({
 }
 
 /** Sticky sub-navigation (Description / Specifications / Reviews) with mini price + buy. */
-export function ProductSubnav({ name, sections, fallback, currency }: { name: string; sections: Array<{ id: string; label: string }>; fallback: ProductVariantView; currency: Currency }) {
+export function ProductSubnav({ name, sections, fallback, variants, currency }: { name: string; sections: Array<{ id: string; label: string }>; fallback: ProductVariantView; variants: ProductVariantView[]; currency: Currency }) {
   const t = useTranslations("product");
   const locale = useLocale();
-  const variant = useSelectedVariant(fallback);
+  const variant = useSelectedVariant(fallback, variants);
   const add = useAddToCart();
   const [active, setActive] = useState(sections[0]?.id);
 

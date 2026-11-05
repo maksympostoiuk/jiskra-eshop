@@ -30,5 +30,7 @@
   "zip": "Enter a valid postcode.",
   "rating": "Choose a rating of 1–5 stars.",
   "reviewLength": "The review must be at least 10 characters long.",
-  "consent": "Your consent is required to place the order."
+  "consent": "Your consent is required to place the order.",
+  "imagePath": "Enter an image path on this site (e.g. /uploads/…); external URLs are not allowed.",
+  "skuOrSlugTaken": "The SKU or slug was taken by another record meanwhile. Reload the page and try again."
 }

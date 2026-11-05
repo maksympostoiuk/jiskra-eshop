@@ -9,7 +9,7 @@ import { Link } from "@/i18n/navigation";
 import type { ProductCardData } from "@/server/catalog";
 import { getCardsForIds } from "@/server/store-actions";
 
-export function FavoritesView() {
+export function FavoritesView({ currency }: { currency: string }) {
   const t = useTranslations("catalog.favorites");
   const ids = useStoreValue(favoritesStore);
   const [cards, setCards] = useState<ProductCardData[] | null>(null);
@@ -20,7 +20,7 @@ export function FavoritesView() {
     return () => {
       cancelled = true;
     };
-  }, [key]);
+  }, [key, currency]);
   const visible = cards?.filter((c) => ids.includes(c.id)) ?? null;
 
   if (visible === null) return <p className="mt-8 text-ink-soft" aria-busy="true">{t("loading")}</p>;

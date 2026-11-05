@@ -31,6 +31,8 @@ export const checkoutSchema = checkoutContactSchema.extend({
   shippingMethodId: z.string().min(1, { error: "v.required" }).max(64),
   paymentMethod: z.string().min(1, { error: "v.required" }).max(32),
   consent: z.literal(true, { error: "v.consent" }),
+  /** total shown to the customer (minor units); must match server-side pricing */
+  expectedTotal: z.number().int().min(0),
   lines: z
     .array(z.object({ variantId: z.string().min(1).max(64), qty: z.number().int().min(1).max(99) }))
     .min(1)

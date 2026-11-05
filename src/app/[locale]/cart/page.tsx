@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Breadcrumbs } from "@/components/store/breadcrumbs";
 import { prisma } from "@/lib/db";
+import { getCurrency } from "@/server/currency";
 import { CartView } from "./cart-view";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,6 +21,7 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
       <Breadcrumbs locale={locale} items={[{ name: t("title"), href: "/cart" }]} />
       <h1 className="mt-4 text-4xl sm:text-5xl">{t("title")}</h1>
       <CartView
+        currency={await getCurrency()}
         freeShipping={{
           CZK: method ? { price: method.priceCzk, freeFrom: method.freeFromCzk } : null,
           USD: method ? { price: method.priceUsd, freeFrom: method.freeFromUsd } : null,

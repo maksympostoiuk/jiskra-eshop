@@ -309,7 +309,8 @@
     "saving": "Ukládám…",
     "applyStatus": "Změnit stav",
     "paymentStatus": "Stav platby",
-    "update": "Uložit"
+    "update": "Uložit",
+    "concurrentUpdate": "Stav objednávky mezitím změnil někdo jiný. Obnovte stránku."
   },
   "users": {
     "title": "Administrátoři",

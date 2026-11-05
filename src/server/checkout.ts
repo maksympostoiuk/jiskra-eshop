@@ -94,12 +94,14 @@ export async function placeOrder(input: CheckoutInput): Promise<ActionResult<{ r
       contact: { ...data, email: data.email.toLowerCase() },
       shippingMethodId: shipping.id,
       paymentMethod: provider.id,
+      expectedTotal: data.expectedTotal,
     });
   } catch (error) {
     if (error instanceof OrderError) {
       if (error.code === "STOCK") return { ok: false, message: t("errors.stock") };
       if (error.code === "UNAVAILABLE") return { ok: false, message: t("errors.unavailable") };
       if (error.code === "EMPTY") return { ok: false, message: t("errors.empty") };
+      if (error.code === "PRICE_CHANGED") return { ok: false, message: t("errors.priceChanged") };
       return { ok: false, errors: { shippingMethodId: t("errors.shipping") } };
     }
     throw error;

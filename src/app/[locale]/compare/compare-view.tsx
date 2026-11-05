@@ -12,7 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { getCompareData, type CompareGroup } from "@/server/store-actions";
 
-export function CompareView() {
+export function CompareView({ currency }: { currency: string }) {
   const t = useTranslations("catalog.compare");
   const locale = useLocale();
   const ids = useStoreValue(compareStore);
@@ -26,7 +26,7 @@ export function CompareView() {
     return () => {
       cancelled = true;
     };
-  }, [key]);
+  }, [key, currency]);
 
   if (groups === null) return <p className="mt-8 text-ink-soft" aria-busy="true">{t("loading")}</p>;
   const visible = groups.map((g) => ({ ...g, products: g.products.filter((p) => ids.includes(p.id)) })).filter((g) => g.products.length);

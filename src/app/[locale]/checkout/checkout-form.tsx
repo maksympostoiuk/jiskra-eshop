@@ -21,12 +21,12 @@ export type ShippingOption = { id: string; name: string; description: string; al
 const PAYMENT_ICONS = { bank_transfer: Landmark, cod: Banknote, stripe: CreditCard } as const;
 const DRAFT_KEY = "jiskra:checkout-draft";
 
-export function CheckoutForm({ shippingOptions, paymentMethods }: { shippingOptions: ShippingOption[]; paymentMethods: Array<"bank_transfer" | "cod" | "stripe"> }) {
+export function CheckoutForm({ currency: pageCurrency, shippingOptions, paymentMethods }: { currency: string; shippingOptions: ShippingOption[]; paymentMethods: Array<"bank_transfer" | "cod" | "stripe"> }) {
   const t = useTranslations("checkout");
   const tPay = useTranslations("common.paymentMethod");
   const tv = useTranslations("validation");
   const locale = useLocale();
-  const { quoted, currency, loading } = useCartQuote();
+  const { quoted, currency, loading } = useCartQuote(pageCurrency);
   const [contact, setContact] = useState({ email: "", phone: "", firstName: "", lastName: "", company: "", street: "", city: "", zip: "", country: "CZ" as (typeof COUNTRIES)[number], note: "" });
   const [shippingMethodId, setShippingMethodId] = useState(shippingOptions[0]?.id ?? "");
   const [paymentMethod, setPaymentMethod] = useState<string>(paymentMethods[0] ?? "");
@@ -77,7 +77,7 @@ export function CheckoutForm({ shippingOptions, paymentMethods }: { shippingOpti
   };
 
   const submit = () => {
-    const input = { ...contact, shippingMethodId, paymentMethod, consent, lines: lines.map((l) => ({ variantId: l.variantId, qty: l.qty })) };
+    const input = { ...contact, shippingMethodId, paymentMethod, consent, expectedTotal: totals.total, lines: lines.map((l) => ({ variantId: l.variantId, qty: l.qty })) };
     const local = validateWith(checkoutSchema, input, locale, (k, v) => tv(k, v));
     if (!local.success) {
       setErrors(local.errors);

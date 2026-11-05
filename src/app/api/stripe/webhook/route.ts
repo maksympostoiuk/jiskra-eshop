@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { verifyStripeSignature } from "@/lib/payments/stripe";
+import { sessionSettlesOrder, toSessionInfo, verifyStripeSignature } from "@/lib/payments/stripe";
 
 /** Stripe webhook: marks orders as paid on `checkout.session.completed`. Requires STRIPE_WEBHOOK_SECRET. */
 export async function POST(request: NextRequest) {
@@ -10,11 +10,19 @@ export async function POST(request: NextRequest) {
   if (!verifyStripeSignature(payload, request.headers.get("stripe-signature"), secret)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
-  const event = JSON.parse(payload) as { type: string; data: { object: { id: string; payment_status?: string; metadata?: { orderId?: string } } } };
-  if (event.type === "checkout.session.completed" && event.data.object.payment_status === "paid") {
-    const orderId = event.data.object.metadata?.orderId;
-    if (orderId) {
-      await prisma.order.updateMany({ where: { id: orderId, paymentMethod: "stripe" }, data: { paymentStatus: "PAID", paymentReference: event.data.object.id } });
+  let event: { type: string; data: { object: { id: string; payment_status?: string; amount_total?: number; currency?: string; metadata?: { orderId?: string } } } };
+  try {
+    event = JSON.parse(payload);
+  } catch {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  }
+  if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
+    const session = toSessionInfo(event.data.object);
+    const order = session.orderId ? await prisma.order.findUnique({ where: { id: session.orderId } }) : null;
+    if (order && order.paymentMethod === "stripe" && sessionSettlesOrder(session, order)) {
+      await prisma.order.update({ where: { id: order.id }, data: { paymentStatus: "PAID", paymentReference: event.data.object.id } });
+    } else if (order) {
+      console.warn(`Stripe session ${event.data.object.id} does not settle order ${order.number}`);
     }
   }
   return NextResponse.json({ received: true });

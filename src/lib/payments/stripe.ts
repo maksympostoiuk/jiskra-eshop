@@ -42,14 +42,31 @@ export const stripeProvider: PaymentProvider = {
   },
 };
 
+export type StripeSessionInfo = { paid: boolean; orderId: string | null; amountTotal: number | null; currency: string | null };
+
+type RawSession = { payment_status?: string; amount_total?: number | null; currency?: string | null; metadata?: { orderId?: string } };
+
+export function toSessionInfo(s: RawSession): StripeSessionInfo {
+  return {
+    paid: s.payment_status === "paid",
+    orderId: s.metadata?.orderId ?? null,
+    amountTotal: typeof s.amount_total === "number" ? s.amount_total : null,
+    currency: s.currency ? s.currency.toUpperCase() : null,
+  };
+}
+
+/** A session settles an order only if it is paid, references that order and charged exactly its total. */
+export function sessionSettlesOrder(session: StripeSessionInfo, order: { id: string; total: number; currency: string }): boolean {
+  return session.paid && session.orderId === order.id && session.amountTotal === order.total && session.currency === order.currency;
+}
+
 /** Fetch a Checkout Session to confirm payment on the return page. */
-export async function retrieveStripeSession(sessionId: string): Promise<{ paid: boolean; orderId: string | null } | null> {
+export async function retrieveStripeSession(sessionId: string): Promise<StripeSessionInfo | null> {
   const key = secretKey();
   if (!key || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) return null;
   const res = await fetch(`${API}/checkout/sessions/${sessionId}`, { headers: { Authorization: `Bearer ${key}` } });
   if (!res.ok) return null;
-  const s = (await res.json()) as { payment_status: string; metadata?: { orderId?: string } };
-  return { paid: s.payment_status === "paid", orderId: s.metadata?.orderId ?? null };
+  return toSessionInfo((await res.json()) as RawSession);
 }
 
 /**

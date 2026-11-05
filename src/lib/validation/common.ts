@@ -11,12 +11,22 @@ export const id = z.string().min(1).max(64);
 export const sortOrder = z.number().int().min(-100000).max(100000);
 export const email = z.email({ error: "v.email" }).trim().toLowerCase().max(200);
 
-/** Internal path ("/category/x") or absolute http(s) URL. */
+/** Internal path ("/category/x") or absolute http(s) URL. Protocol-relative "//host" is rejected. */
 export const link = z
   .string()
   .trim()
   .max(500)
-  .refine((v) => v === "" || v.startsWith("/") || /^https?:\/\//.test(v), { error: "v.link" });
+  .refine((v) => v === "" || /^\/(?!\/)/.test(v) || /^https?:\/\/[^\s]+$/.test(v), { error: "v.link" });
+
+/**
+ * Image reference stored in the CMS: a site-relative path (uploads, generated placeholders).
+ * External URLs are rejected because next/image only serves configured hosts.
+ */
+export const imagePath = z
+  .string()
+  .trim()
+  .max(500)
+  .regex(/^\/(?!\/)[A-Za-z0-9._~\-/%]+$/, { error: "v.imagePath" });
 
 /** `{ cs: T, en: T }` */
 export function localized<T extends z.ZodType>(schema: T) {

@@ -18,10 +18,16 @@
     "users": "Admin users",
     "settings": "Settings"
   },
-  "roles": { "ADMIN": "Administrator", "EDITOR": "Editor" },
+  "roles": {
+    "ADMIN": "Administrator",
+    "EDITOR": "Editor"
+  },
   "common": {
     "languages": "Languages",
-    "locale": { "cs": "Czech", "en": "English" },
+    "locale": {
+      "cs": "Czech",
+      "en": "English"
+    },
     "hasErrors": "contains errors",
     "cancel": "Cancel",
     "working": "Working…",
@@ -41,7 +47,13 @@
     "choose": "Choose…",
     "yes": "Yes",
     "no": "No",
-    "status": { "DRAFT": "Draft", "PUBLISHED": "Published", "PENDING": "Pending", "APPROVED": "Approved", "REJECTED": "Rejected" },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
     "search": "Search",
     "all": "All",
     "filter": "Filter",
@@ -193,7 +205,11 @@
     "keyHint": "Used in filter URLs, e.g. ram or display_size.",
     "type": "Type",
     "typeWarning": "Changing the type deletes the values stored on products.",
-    "types": { "NUMBER": "Number", "TEXT": "Text", "BOOLEAN": "Yes / no" },
+    "types": {
+      "NUMBER": "Number",
+      "TEXT": "Text",
+      "BOOLEAN": "Yes / no"
+    },
     "sortOrder": "Sort order",
     "filterable": "Show as a filter in the category",
     "isKey": "Key specification (listing and product summary)",
@@ -235,7 +251,11 @@
     "imageAlt": "Image alt text",
     "preview": "Preview (CS)",
     "placement": "Placement",
-    "placements": { "HERO": "Main hero", "HERO_SIDE": "Side hero", "PROMO": "Promo tile" },
+    "placements": {
+      "HERO": "Main hero",
+      "HERO_SIDE": "Side hero",
+      "PROMO": "Promo tile"
+    },
     "image": "Image",
     "bgColor": "Background colour",
     "textColor": "Text colour",
@@ -289,7 +309,8 @@
     "saving": "Saving…",
     "applyStatus": "Change status",
     "paymentStatus": "Payment status",
-    "update": "Save"
+    "update": "Save",
+    "concurrentUpdate": "Someone else changed the order status meanwhile. Please reload the page."
   },
   "users": {
     "title": "Admin users",
@@ -299,7 +320,10 @@
     "email": "E-mail",
     "role": "Role",
     "roleHint": "Editors can't manage admin users and settings.",
-    "roles": { "ADMIN": "Administrator", "EDITOR": "Editor" },
+    "roles": {
+      "ADMIN": "Administrator",
+      "EDITOR": "Editor"
+    },
     "newPassword": "New password",
     "password": "Password",
     "passwordKeep": "Leave empty to keep the current password.",
@@ -320,7 +344,11 @@
     "usdRate": "CZK per 1 USD",
     "usdRateHint": "Used to fill USD prices in the product editor.",
     "usdRounding": "USD rounding",
-    "rounding": { "CENT": "To the cent ($42.37)", "WHOLE": "Whole dollars ($42.00)", "NINETY_NINE": "To .99 ($41.99)" },
+    "rounding": {
+      "CENT": "To the cent ($42.37)",
+      "WHOLE": "Whole dollars ($42.00)",
+      "NINETY_NINE": "To .99 ($41.99)"
+    },
     "recalcHint": "Recalculates the USD prices of all variants from CZK using the saved rate. Manual USD prices will be overwritten.",
     "recalc": "Recalculate all USD prices",
     "recalculated": "Recalculated {count} variants.",

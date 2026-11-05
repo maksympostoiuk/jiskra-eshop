@@ -30,5 +30,7 @@
   "zip": "Zadejte platné PSČ.",
   "rating": "Vyberte hodnocení 1–5 hvězdiček.",
   "reviewLength": "Recenze musí mít alespoň 10 znaků.",
-  "consent": "Pro dokončení objednávky je nutný souhlas."
+  "consent": "Pro dokončení objednávky je nutný souhlas.",
+  "imagePath": "Zadejte cestu k obrázku na tomto webu (např. /uploads/…); externí adresy nejsou povolené.",
+  "skuOrSlugTaken": "SKU nebo slug mezitím použil jiný záznam. Obnovte stránku a zkuste to znovu."
 }

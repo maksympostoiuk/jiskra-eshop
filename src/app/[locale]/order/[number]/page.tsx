@@ -8,7 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { ORDER_STATUSES, PAYMENT_STATUSES, isOneOf } from "@/lib/domain";
 import { formatMoney, isCurrency } from "@/lib/money";
-import { retrieveStripeSession } from "@/lib/payments/stripe";
+import { retrieveStripeSession, sessionSettlesOrder } from "@/lib/payments/stripe";
 import { getSettings } from "@/server/settings";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -31,7 +31,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   // Returning from Stripe Checkout: confirm the payment server-side.
   if (session_id && order.paymentMethod === "stripe" && order.paymentStatus !== "PAID") {
     const session = await retrieveStripeSession(session_id);
-    if (session?.paid && session.orderId === order.id) {
+    if (session && sessionSettlesOrder(session, order)) {
       order = await prisma.order.update({ where: { id: order.id }, data: { paymentStatus: "PAID", paymentReference: session_id }, include: { items: true } });
     }
   }

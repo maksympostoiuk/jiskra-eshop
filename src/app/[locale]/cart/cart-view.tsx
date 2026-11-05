@@ -9,10 +9,11 @@ import { Link } from "@/i18n/navigation";
 import { computeTotals, findStockIssues, remainingForFreeShipping, removeLine, setLineQty } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
 
-export function CartView({ freeShipping }: { freeShipping: { CZK: { price: number; freeFrom: number | null } | null; USD: { price: number; freeFrom: number | null } | null } }) {
+export function CartView({ currency: pageCurrency, freeShipping }: {
+  currency: string; freeShipping: { CZK: { price: number; freeFrom: number | null } | null; USD: { price: number; freeFrom: number | null } | null } }) {
   const t = useTranslations("cart");
   const locale = useLocale();
-  const { quoted, currency, loading } = useCartQuote();
+  const { quoted, currency, loading } = useCartQuote(pageCurrency);
 
   if (loading) return <p className="mt-8 text-ink-soft" aria-busy="true">{t("loading")}</p>;
   if (!quoted.length || !currency)

@@ -4,6 +4,7 @@ import { Breadcrumbs } from "@/components/store/breadcrumbs";
 import { prisma } from "@/lib/db";
 import { pickTranslation } from "@/lib/i18n-content";
 import { availablePaymentMethods } from "@/lib/payments";
+import { getCurrency } from "@/server/currency";
 import { CheckoutForm } from "./checkout-form";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,6 +22,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
       <Breadcrumbs locale={locale} items={[{ name: t("cart"), href: "/cart" }, { name: t("title"), href: "/checkout" }]} />
       <h1 className="mt-4 text-4xl sm:text-5xl">{t("title")}</h1>
       <CheckoutForm
+        currency={await getCurrency()}
         paymentMethods={availablePaymentMethods()}
         shippingOptions={methods.map((m) => {
           const tr = pickTranslation(m.translations, locale);

@@ -22,24 +22,29 @@ export async function changeOrderStatus(input: { orderId: string; toStatus: stri
   if (!canTransition(order.status, toStatus)) return { ok: false, message: t("invalidTransition") };
 
   const touchedProducts = new Set<string>();
-  await prisma.$transaction(async (tx) => {
-    // Optimistic guard: only transition from the status we validated against.
-    const updated = await tx.order.updateMany({ where: { id: orderId, status: order.status }, data: { status: toStatus } });
-    if (updated.count !== 1) throw new Error("CONCURRENT_UPDATE");
-    if (toStatus === "CANCELLED") {
-      for (const item of order.items) {
-        if (item.variantId) {
-          await tx.productVariant.updateMany({ where: { id: item.variantId }, data: { stock: { increment: item.quantity } } });
-        }
-        if (item.productId) {
-          await tx.product.updateMany({ where: { id: item.productId, soldCount: { gte: item.quantity } }, data: { soldCount: { decrement: item.quantity } } });
-          touchedProducts.add(item.productId);
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Optimistic guard: only transition from the status we validated against.
+      const updated = await tx.order.updateMany({ where: { id: orderId, status: order.status }, data: { status: toStatus } });
+      if (updated.count !== 1) throw new Error("CONCURRENT_UPDATE");
+      if (toStatus === "CANCELLED") {
+        for (const item of order.items) {
+          if (item.variantId) {
+            await tx.productVariant.updateMany({ where: { id: item.variantId }, data: { stock: { increment: item.quantity } } });
+          }
+          if (item.productId) {
+            await tx.product.updateMany({ where: { id: item.productId, soldCount: { gte: item.quantity } }, data: { soldCount: { decrement: item.quantity } } });
+            touchedProducts.add(item.productId);
+          }
         }
       }
-    }
-    await tx.orderStatusChange.create({ data: { orderId, fromStatus: order.status, toStatus, note: note || null, changedById: admin.id } });
-    for (const productId of touchedProducts) await refreshProductAggregates(tx, productId);
-  });
+      await tx.orderStatusChange.create({ data: { orderId, fromStatus: order.status, toStatus, note: note || null, changedById: admin.id } });
+      for (const productId of touchedProducts) await refreshProductAggregates(tx, productId);
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "CONCURRENT_UPDATE") return { ok: false, message: t("concurrentUpdate") };
+    throw error;
+  }
 
   await sendOrderStatusEmail(orderId).catch((error) => console.error("Failed to send status e-mail", error));
   revalidatePath(`/admin/orders/${orderId}`);

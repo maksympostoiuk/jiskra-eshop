@@ -11,7 +11,8 @@
     "payment": "Vybraný způsob platby není pro tuto dopravu dostupný.",
     "stock": "Mezitím se změnila skladová dostupnost. Zkontrolujte prosím košík.",
     "unavailable": "Některý produkt už není v nabídce. Zkontrolujte prosím košík.",
-    "empty": "Košík je prázdný."
+    "empty": "Košík je prázdný.",
+    "priceChanged": "Ceny se mezitím změnily. Zkontrolujte prosím aktualizované shrnutí a objednávku odešlete znovu."
   },
   "contact": "Kontaktní údaje",
   "email": "E-mail",

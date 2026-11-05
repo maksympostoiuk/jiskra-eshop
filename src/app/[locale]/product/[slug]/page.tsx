@@ -48,9 +48,11 @@ export default async function ProductPage({ params }: Props) {
   const t = await getTranslations("product");
   const format = await getFormatter();
   const { product, variants, optionGroups, images, specs, path, reviews, distribution, related } = data;
-  const fallback = defaultVariant(variants)!;
-  const courier = await prisma.shippingMethod.findFirst({ where: { isActive: true, code: "courier" } });
-  const freeFrom = courier ? (currency === "CZK" ? courier.freeFromCzk : courier.freeFromUsd) : null;
+  const fallback = defaultVariant(variants);
+  if (!fallback) notFound(); // a published product without variants cannot be sold
+  // Delivery note: the paid shipping method with the lowest free-shipping threshold (same rule as the cart).
+  const freeMethod = await prisma.shippingMethod.findFirst({ where: { isActive: true, priceCzk: { gt: 0 }, freeFromCzk: { not: null } }, orderBy: { freeFromCzk: "asc" } });
+  const freeFrom = freeMethod ? (currency === "CZK" ? freeMethod.freeFromCzk : freeMethod.freeFromUsd) : null;
   const shippingNote = freeFrom ? t("delivery.freeFrom", { amount: formatMoney(freeFrom, currency, locale) }) : null;
   const paragraphs = product.description.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const url = `${siteUrl()}/${locale}/product/${product.slug}`;
@@ -82,7 +84,7 @@ export default async function ProductPage({ params }: Props) {
         shippingNote={shippingNote}
       />
 
-      <ProductSubnav name={product.name} sections={sections} fallback={fallback} currency={currency} />
+      <ProductSubnav name={product.name} sections={sections} fallback={fallback} variants={variants} currency={currency} />
 
       <div className="grid gap-x-12 lg:grid-cols-[1.4fr_1fr]">
         <section id="description" aria-labelledby="description-title" className="scroll-mt-48 pt-10">

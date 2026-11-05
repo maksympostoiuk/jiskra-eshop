@@ -33,22 +33,24 @@ export function ImageManager({
   const [error, setError] = useState<string | null>(null);
   const [uploading, startUpload] = useTransition();
 
+  // One request per file keeps each server-action body well under the size limit.
   const upload = (files: FileList | File[]) => {
     const list = Array.from(files).filter((f) => f.type.startsWith("image/"));
     if (!list.length) return;
-    const formData = new FormData();
-    list.forEach((f) => formData.append("files", f));
     setError(null);
     startUpload(async () => {
-      const result = await uploadImages(formData);
-      if (!result.ok) {
-        setError(result.message ?? t("uploadFailed"));
-        return;
+      const added: ImageForm[] = [];
+      for (const file of list) {
+        const formData = new FormData();
+        formData.append("files", file);
+        const result = await uploadImages(formData);
+        if (!result.ok) {
+          setError(result.message ?? t("uploadFailed"));
+          break;
+        }
+        for (const url of result.data?.urls ?? []) added.push({ key: uid(), url, altCs: "", altEn: "", colorValue: "" });
       }
-      onChange([
-        ...images,
-        ...(result.data?.urls ?? []).map((url) => ({ key: uid(), url, altCs: "", altEn: "", colorValue: "" })),
-      ]);
+      if (added.length) onChange([...images, ...added]);
     });
   };
 

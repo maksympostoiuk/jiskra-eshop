@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Breadcrumbs } from "@/components/store/breadcrumbs";
+import { getCurrency } from "@/server/currency";
 import { CompareView } from "./compare-view";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,7 +17,7 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
     <div className="container-shop pt-6">
       <Breadcrumbs locale={locale} items={[{ name: t("title"), href: "/compare" }]} />
       <h1 className="mt-4 text-4xl sm:text-5xl">{t("title")}</h1>
-      <CompareView />
+      <CompareView currency={await getCurrency()} />
     </div>
   );
 }

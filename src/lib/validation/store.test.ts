@@ -17,6 +17,7 @@ const valid = {
   shippingMethodId: "s1",
   paymentMethod: "cod",
   consent: true,
+  expectedTotal: 259800,
   lines: [{ variantId: "v1", qty: 2 }],
 };
 

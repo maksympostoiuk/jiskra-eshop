@@ -26,11 +26,15 @@ export type CreateOrderInput = {
   contact: OrderContact;
   shippingMethodId: string;
   paymentMethod: string;
+  /** total the customer saw; the order is refused if server-side pricing differs (prices changed meanwhile) */
+  expectedTotal?: number;
+  /** logged-in customer account, if any */
+  customerId?: string | null;
 };
 
 export class OrderError extends Error {
   constructor(
-    readonly code: "EMPTY" | "UNAVAILABLE" | "STOCK" | "SHIPPING",
+    readonly code: "EMPTY" | "UNAVAILABLE" | "STOCK" | "SHIPPING" | "PRICE_CHANGED",
     readonly details: Extract<OrderPlan, { ok: false }> | null = null,
   ) {
     super(code);
@@ -77,6 +81,7 @@ export async function createOrder(db: PrismaClient, input: CreateOrderInput) {
     };
     const plan = planOrder(input.lines, forOrder, input.currency, rule);
     if (!plan.ok) throw new OrderError(plan.reason, plan);
+    if (input.expectedTotal !== undefined && input.expectedTotal !== plan.total) throw new OrderError("PRICE_CHANGED");
 
     // Decrement stock only where enough is left (guards against races between concurrent checkouts).
     for (const item of plan.items) {

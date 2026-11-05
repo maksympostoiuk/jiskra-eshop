@@ -10,7 +10,7 @@ import {
   VARIANT_OPTION_NAMES,
 } from "@/lib/domain";
 import { USD_ROUNDING_MODES } from "@/lib/money";
-import { email, hexColor, id, link, localized, minor, optionalMinor, optionalText, required, slug, sortOrder } from "./common";
+import { email, hexColor, id, imagePath, link, localized, minor, optionalMinor, optionalText, required, slug, sortOrder } from "./common";
 
 export const loginSchema = z.object({
   email,
@@ -56,7 +56,7 @@ export const variantSchema = z
 
 export const productImageSchema = z.object({
   id: z.string().optional(),
-  url: z.string().trim().min(1).max(500),
+  url: imagePath,
   altCs: optionalText(200),
   altEn: optionalText(200),
   /** colour option value the image belongs to (null = all variants) */
@@ -122,7 +122,7 @@ export type CategoryInput = z.infer<typeof categorySchema>;
 export const brandSchema = z.object({
   name: required(80),
   slug,
-  logoUrl: z.string().trim().max(500).nullable(),
+  logoUrl: imagePath.nullable(),
   website: z.union([z.literal(""), z.url({ error: "v.url" }).max(300)]),
   sortOrder,
   isActive: z.boolean(),
@@ -159,7 +159,7 @@ const optionalDate = z
 export const bannerSchema = z
   .object({
     placement: z.enum(BANNER_PLACEMENTS),
-    imageUrl: z.string().trim().max(500).nullable(),
+    imageUrl: imagePath.nullable(),
     bgColor: hexColor,
     textColor: hexColor,
     sortOrder,

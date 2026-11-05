@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { quoteCart, type QuotedLine } from "@/server/checkout";
 import { cartStore, useStoreValue } from "./client-store";
 
-/** Cart lines from localStorage, priced on the server in the visitor's currency. */
-export function useCartQuote() {
+/**
+ * Cart lines from localStorage, priced on the server in the visitor's currency.
+ * `currency` comes from the server page so a currency switch (router.refresh) triggers a re-quote.
+ */
+export function useCartQuote(currency: string) {
   const lines = useStoreValue(cartStore);
   const [quote, setQuote] = useState<{ currency: "CZK" | "USD"; lines: QuotedLine[] } | null>(null);
   const [loading, setLoading] = useState(true);
-  const key = lines.map((l) => l.variantId).sort().join(",");
+  const key = `${currency}|${lines.map((l) => l.variantId).sort().join(",")}`;
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
