@@ -82,6 +82,13 @@ test.describe("storefront purchase flow", () => {
     await expect(page.getByRole("link", { name: "Halvo Studio ANC" }).first()).toBeVisible();
   });
 
+  test("switching currency drops price bounds from the URL", async ({ page }) => {
+    await page.goto("/cs/category/sluchatka?pmax=3000&sort=price_asc");
+    await page.getByRole("group", { name: "Měna" }).getByRole("button", { name: "USD" }).click();
+    await expect(page).toHaveURL(/sort=price_asc/);
+    await expect(page).not.toHaveURL(/pmax=/);
+  });
+
   test("search suggestions lead to products", async ({ page }) => {
     await page.goto("/en");
     await page.getByRole("combobox").fill("halvo");

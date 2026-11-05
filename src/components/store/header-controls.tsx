@@ -74,7 +74,21 @@ export function LocaleCurrencySwitcher({ currency, className }: { currency: stri
           </Link>
         ))}
       </div>
-      <CurrencyToggle current={currency} pending={pending} onChange={(c) => start(async () => { await setCurrency(c); router.refresh(); })} />
+      <CurrencyToggle
+        current={currency}
+        pending={pending}
+        onChange={(c) =>
+          start(async () => {
+            await setCurrency(c);
+            // Price bounds are in the old currency's units, so they are dropped on a currency switch.
+            if (searchParams.has("pmin") || searchParams.has("pmax")) {
+              const rest = Object.fromEntries([...searchParams.entries()].filter(([k]) => k !== "pmin" && k !== "pmax" && k !== "page"));
+              router.replace({ pathname, query: rest });
+            }
+            router.refresh();
+          })
+        }
+      />
     </div>
   );
 }

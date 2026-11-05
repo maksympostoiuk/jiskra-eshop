@@ -52,6 +52,12 @@ export async function requireAdmin(options: { role?: AdminRole } = {}): Promise<
   return admin;
 }
 
+/** Id (hash) of the current admin session, if any. */
+export async function currentAdminSessionId(): Promise<string | null> {
+  const token = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value;
+  return token ? hashToken(token) : null;
+}
+
 export async function destroyAdminSession(): Promise<void> {
   const store = await cookies();
   const token = store.get(ADMIN_SESSION_COOKIE)?.value;

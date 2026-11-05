@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
-import { requireAdmin } from "@/lib/auth/session";
+import { currentAdminSessionId, requireAdmin } from "@/lib/auth/session";
 import { convertCzkToUsd } from "@/lib/money";
 import { LOCALES } from "@/i18n/routing";
 import {
@@ -38,8 +38,11 @@ export async function saveAdminUser(userId: string | null, input: AdminUserInput
     const user = userId
       ? await prisma.adminUser.update({ where: { id: userId }, data: { ...data, ...(passwordHash ? { passwordHash } : {}) } })
       : await prisma.adminUser.create({ data: { ...data, passwordHash: passwordHash! } });
-    // Deactivated users or changed passwords lose their sessions.
-    if (userId && (!data.isActive || passwordHash)) await prisma.adminSession.deleteMany({ where: { adminUserId: userId } });
+    // Deactivated users or changed passwords lose their sessions (except the one making the change).
+    if (userId && (!data.isActive || passwordHash)) {
+      const keep = userId === me.id ? await currentAdminSessionId() : null;
+      await prisma.adminSession.deleteMany({ where: { adminUserId: userId, ...(keep ? { NOT: { id: keep } } : {}) } });
+    }
     revalidatePath("/admin/users");
     return { ok: true, data: { id: user.id }, message: (await getTranslations("admin.common"))("saved") };
   } catch (error) {
