@@ -22,6 +22,16 @@ Then open http://localhost:3000/cs (storefront) and http://localhost:3000/admin 
 
 The admin panel lives at `/admin` (credentials = `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `.env`).
 
+## Screenshots
+
+| Home | Catalog menu | Category |
+| --- | --- | --- |
+| ![Home](docs/screenshots/1-home.png) | ![Catalog menu](docs/screenshots/2-catalog-menu.png) | ![Category](docs/screenshots/3-category.png) |
+| **Product** | **Cart** | **CMS dashboard** |
+| ![Product](docs/screenshots/4-product.png) | ![Cart](docs/screenshots/5-cart.png) | ![CMS](docs/screenshots/6-admin.png) |
+
+Mobile: [docs/screenshots/7-mobile.png](docs/screenshots/7-mobile.png)
+
 ## Scripts
 
 | Command | What it does |
