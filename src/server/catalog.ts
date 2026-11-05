@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { ancestorIds, buildTree, descendantIds, flattenTree } from "@/lib/catalog/category-tree";
+import { ancestorIds, buildTree, descendantIds, flattenTree, visibleCategoryIds } from "@/lib/catalog/category-tree";
 import { PAGE_SIZE, type CatalogFilters, type SortKey, type SpecFilterDef } from "@/lib/catalog/filters";
 import { formatSpecValue } from "@/lib/catalog/spec-format";
 import { pickLocalized, pickTranslation } from "@/lib/i18n-content";
@@ -30,7 +30,7 @@ export type CategoryNode = {
 /** Active category tree for a locale, with product counts (memoized per request). */
 export const getCategoryTree = cache(async (locale: string) => {
   const [rows, counts] = await Promise.all([
-    prisma.category.findMany({ where: { isActive: true }, include: { translations: true } }),
+    prisma.category.findMany({ include: { translations: true } }),
     prisma.product.groupBy({ by: ["categoryId"], where: { status: "PUBLISHED" }, _count: { _all: true } }),
   ]);
   const direct = new Map(counts.map((c) => [c.categoryId, c._count._all]));
@@ -49,9 +49,9 @@ export const getCategoryTree = cache(async (locale: string) => {
       productCount: 0,
     };
   });
-  // Drop children of inactive parents (they are missing from `rows`).
-  const ids = new Set(flatRows.map((r) => r.id));
-  const visible = flatRows.filter((r) => !r.parentId || ids.has(r.parentId));
+  // Only categories that are active along their whole ancestor chain are shown.
+  const visibleIds = visibleCategoryIds(rows);
+  const visible = flatRows.filter((r) => visibleIds.has(r.id));
   for (const r of visible) r.productCount = descendantIds(visible, r.id).reduce((n, id) => n + (direct.get(id) ?? 0), 0);
   const roots = buildTree(visible) as CategoryNode[];
   const flat = flattenTree(roots) as CategoryNode[];
@@ -197,12 +197,21 @@ export function orderByFor(sort: SortKey, currency: Currency): Prisma.ProductOrd
   }
 }
 
+/**
+ * Products the storefront may show: published and in a visible category (the category and all its
+ * ancestors are active). Deactivating a category therefore hides its products everywhere.
+ */
+export async function visibleProductWhere(locale: string): Promise<Prisma.ProductWhereInput> {
+  const { byId } = await getCategoryTree(locale);
+  return { status: "PUBLISHED", categoryId: { in: [...byId.keys()] } };
+}
+
 export async function getCards(
   where: Prisma.ProductWhereInput,
   opts: { locale: string; currency: Currency; yesNo: { yes: string; no: string }; orderBy?: Prisma.ProductOrderByWithRelationInput[]; take?: number; skip?: number },
 ): Promise<ProductCardData[]> {
   const products = await prisma.product.findMany({
-    where: { ...where, status: "PUBLISHED" },
+    where: { AND: [where, await visibleProductWhere(opts.locale)] },
     include: cardInclude,
     orderBy: opts.orderBy ?? [{ soldCount: "desc" }],
     take: opts.take,

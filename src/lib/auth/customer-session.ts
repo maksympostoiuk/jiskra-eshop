@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { randomToken } from "@/lib/random";
 import { hashToken } from "./tokens";
 
-export const CUSTOMER_SESSION_COOKIE = "customer_session";
+import { CUSTOMER_SESSION_COOKIE } from "./cookies";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export type CustomerIdentity = { id: string; email: string; firstName: string; lastName: string; phone: string | null };

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { formatPercent } from "@/lib/format";
 import { discountPercent, formatMoney, type Currency } from "@/lib/money";
 
 /** Current price with optional crossed-out old price and discount percentage. */
@@ -25,7 +26,7 @@ export function Price({
       {pct > 0 && oldPrice && (
         <span className="w-full text-sm text-ink-faint">
           <s aria-label={discountLabel}>{formatMoney(oldPrice, currency, locale)}</s>
-          <span className="ml-2 rounded-full bg-sale-soft px-1.5 py-0.5 text-xs font-semibold text-sale">−{pct} %</span>
+          <span className="ml-2 rounded-full bg-sale-soft px-1.5 py-0.5 text-xs font-semibold text-sale">−{formatPercent(pct, locale)}</span>
         </span>
       )}
       <span

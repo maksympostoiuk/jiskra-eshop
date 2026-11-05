@@ -93,6 +93,7 @@
     "parameter": "Specification",
     "remove": "Remove {name} from comparison",
     "brand": "Brand",
-    "rating": "Rating"
+    "rating": "Rating",
+    "ratingLabel": "Rated {rating} out of 5"
   }
 }

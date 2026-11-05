@@ -72,3 +72,17 @@ export function wouldCreateCycle(items: FlatCategory[], id: string, newParentId:
   if (!newParentId) return false;
   return descendantIds(items, id).includes(newParentId);
 }
+
+/** Ids of categories that are active and whose ancestors are all active (i.e. visible in the shop). */
+export function visibleCategoryIds(items: Array<FlatCategory & { isActive: boolean }>): Set<string> {
+  const byId = new Map(items.map((c) => [c.id, c]));
+  const memo = new Map<string, boolean>();
+  const visible = (id: string, seen: Set<string>): boolean => {
+    if (memo.has(id)) return memo.get(id)!;
+    const c = byId.get(id);
+    const result = !!c && c.isActive && !seen.has(id) && (!c.parentId || visible(c.parentId, new Set(seen).add(id)));
+    memo.set(id, result);
+    return result;
+  };
+  return new Set(items.filter((c) => visible(c.id, new Set())).map((c) => c.id));
+}

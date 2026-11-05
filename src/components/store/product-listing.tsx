@@ -4,14 +4,14 @@ import { ChevronLeft, ChevronRight, SearchX } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { parseFilters, serializeFilters, type QueryInput } from "@/lib/catalog/filters";
-import { buildListingWhere, getFacets, listProducts, type SpecDef } from "@/server/catalog";
+import { buildListingWhere, getFacets, listProducts, visibleProductWhere, type SpecDef } from "@/server/catalog";
 import { getCurrency } from "@/server/currency";
 import { FilterPanel, ListingToolbar } from "./filter-panel";
 import { ProductCard } from "./product-card";
 
 /** Filter sidebar + toolbar + grid/list + pagination for a product scope (category or search). */
 export async function ProductListing({
-  scope,
+  scope: requestedScope,
   specDefs,
   searchParams,
   basePath,
@@ -30,6 +30,7 @@ export async function ProductListing({
   const yesNo = { yes: tc("yes"), no: tc("no") };
   const currency = await getCurrency();
   const filters = parseFilters(searchParams, specDefs);
+  const scope: Prisma.ProductWhereInput = { AND: [requestedScope, await visibleProductWhere(locale)] };
   const where = buildListingWhere(scope, filters, specDefs, currency);
   const [facets, result] = await Promise.all([getFacets(scope, specDefs, filters, currency, locale, yesNo), listProducts(where, filters, { locale, currency, yesNo })]);
 

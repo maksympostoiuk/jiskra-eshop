@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { rateLimit } from "@/lib/auth/rate-limit";
 import { sanitizeLines, type CartLine } from "@/lib/cart";
 import { pickLocalized, pickTranslation } from "@/lib/i18n-content";
+import { visibleCategoryIds } from "@/lib/catalog/category-tree";
 import { formatMoney } from "@/lib/money";
 import { createOrder, OrderError } from "@/lib/orders/create-order";
 import { getPaymentProvider } from "@/lib/payments";
@@ -44,6 +45,7 @@ export async function quoteCart(rawLines: CartLine[]): Promise<{ currency: "CZK"
       product: { include: { translations: true, images: { orderBy: { sortOrder: "asc" }, include: { variant: { select: { id: true } } } } } },
     },
   });
+  const visible = visibleCategoryIds(await prisma.category.findMany({ select: { id: true, parentId: true, sortOrder: true, isActive: true } }));
   return {
     currency,
     lines: lines.map((l) => {
@@ -54,7 +56,7 @@ export async function quoteCart(rawLines: CartLine[]): Promise<{ currency: "CZK"
       return {
         variantId: v.id,
         qty: l.qty,
-        available: v.product.status === "PUBLISHED",
+        available: v.product.status === "PUBLISHED" && visible.has(v.product.categoryId),
         stock: v.stock,
         unitPrice: currency === "CZK" ? v.priceCzk : v.priceUsd,
         oldPrice: currency === "CZK" ? v.oldPriceCzk : v.oldPriceUsd,

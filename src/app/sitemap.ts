@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 import { siteUrl } from "@/lib/site";
-import { LOCALES } from "@/i18n/routing";
+import { DEFAULT_LOCALE, LOCALES } from "@/i18n/routing";
+import { getCategoryTree, visibleProductWhere } from "@/server/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,10 @@ function entry(paths: Record<string, string>, lastModified: Date, priority: numb
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [categories, products] = await Promise.all([
-    prisma.category.findMany({ where: { isActive: true }, include: { translations: { select: { locale: true, slug: true } } } }),
-    prisma.product.findMany({ where: { status: "PUBLISHED" }, select: { updatedAt: true, translations: { select: { locale: true, slug: true } } } }),
+    getCategoryTree(DEFAULT_LOCALE).then(({ byId }) =>
+      prisma.category.findMany({ where: { id: { in: [...byId.keys()] } }, include: { translations: { select: { locale: true, slug: true } } } }),
+    ),
+    prisma.product.findMany({ where: await visibleProductWhere(DEFAULT_LOCALE), select: { updatedAt: true, translations: { select: { locale: true, slug: true } } } }),
   ]);
   const home = entry(Object.fromEntries(LOCALES.map((l) => [l, ""])), new Date(), 1);
   const cats = categories.flatMap((c) => entry(Object.fromEntries(c.translations.map((t) => [t.locale, `/category/${t.slug}`])), c.updatedAt, 0.8));

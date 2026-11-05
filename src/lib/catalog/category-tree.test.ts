@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ancestorIds, buildTree, descendantIds, flattenTree, wouldCreateCycle } from "./category-tree";
+import { ancestorIds, buildTree, descendantIds, flattenTree, visibleCategoryIds, wouldCreateCycle } from "./category-tree";
 
 const items = [
   { id: "a", parentId: null, sortOrder: 1 },
@@ -22,5 +22,19 @@ describe("category tree", () => {
     expect(wouldCreateCycle(items, "a", "a0x")).toBe(true);
     expect(wouldCreateCycle(items, "a0", "b")).toBe(false);
     expect(wouldCreateCycle(items, "a", null)).toBe(false);
+  });
+});
+
+describe("visibleCategoryIds", () => {
+  it("hides inactive categories and everything below them", () => {
+    const rows = [
+      { id: "a", parentId: null, sortOrder: 0, isActive: true },
+      { id: "a1", parentId: "a", sortOrder: 0, isActive: true },
+      { id: "b", parentId: null, sortOrder: 1, isActive: false },
+      { id: "b1", parentId: "b", sortOrder: 0, isActive: true },
+      { id: "b1x", parentId: "b1", sortOrder: 0, isActive: true },
+      { id: "orphan", parentId: "missing", sortOrder: 0, isActive: true },
+    ];
+    expect([...visibleCategoryIds(rows)].sort()).toEqual(["a", "a1"]);
   });
 });

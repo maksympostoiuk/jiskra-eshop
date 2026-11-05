@@ -16,6 +16,7 @@ import {
   type SpecDefinitionInput,
 } from "@/lib/validation/admin";
 import { isUniqueViolation, validateInput, type ActionResult } from "../action";
+import { cleanupUploads } from "../uploads";
 
 async function fail(errors: Record<string, string>) {
   const t = await getTranslations("admin.common");
@@ -35,8 +36,10 @@ export async function saveBrand(brandId: string | null, input: BrandInput): Prom
   if (!parsed.success) return fail(parsed.errors);
   const { website, ...rest } = parsed.data;
   const data = { ...rest, website: website || null };
+  const previousLogo = brandId ? (await prisma.brand.findUnique({ where: { id: brandId }, select: { logoUrl: true } }))?.logoUrl : null;
   try {
     const brand = brandId ? await prisma.brand.update({ where: { id: brandId }, data }) : await prisma.brand.create({ data });
+    await cleanupUploads([previousLogo]);
     return saved("/admin/brands", { id: brand.id });
   } catch (error) {
     if (isUniqueViolation(error)) return fail({ slug: (await getTranslations("validation"))("slugTaken") });
@@ -46,7 +49,8 @@ export async function saveBrand(brandId: string | null, input: BrandInput): Prom
 
 export async function deleteBrand(brandId: string): Promise<ActionResult> {
   await requireAdmin();
-  await prisma.brand.delete({ where: { id: brandId } }).catch(() => null); // products keep brandId = null (SetNull)
+  const brand = await prisma.brand.delete({ where: { id: brandId } }).catch(() => null); // products keep brandId = null (SetNull)
+  await cleanupUploads([brand?.logoUrl]);
   revalidatePath("/admin/brands");
   return { ok: true };
 }
@@ -128,6 +132,7 @@ export async function saveBanner(bannerId: string | null, input: BannerInput): P
   const parsed = await validateInput(bannerSchema, input);
   if (!parsed.success) return fail(parsed.errors);
   const { translations, startsAt, endsAt, ...rest } = parsed.data;
+  const previousImage = bannerId ? (await prisma.banner.findUnique({ where: { id: bannerId }, select: { imageUrl: true } }))?.imageUrl : null;
   const base = { ...rest, imageUrl: rest.imageUrl || null, startsAt: startsAt ? new Date(startsAt) : null, endsAt: endsAt ? new Date(endsAt) : null };
   const id = await prisma.$transaction(async (tx) => {
     const banner = bannerId ? await tx.banner.update({ where: { id: bannerId }, data: base }) : await tx.banner.create({ data: base });
@@ -141,19 +146,14 @@ export async function saveBanner(bannerId: string | null, input: BannerInput): P
     }
     return banner.id;
   });
+  await cleanupUploads([previousImage]);
   return saved("/admin/banners", { id });
 }
 
 export async function deleteBanner(bannerId: string): Promise<ActionResult> {
   await requireAdmin();
-  await prisma.banner.delete({ where: { id: bannerId } }).catch(() => null);
-  revalidatePath("/admin/banners");
-  return { ok: true };
-}
-
-export async function toggleBanner(bannerId: string, isActive: boolean): Promise<ActionResult> {
-  await requireAdmin();
-  await prisma.banner.update({ where: { id: bannerId }, data: { isActive } });
+  const banner = await prisma.banner.delete({ where: { id: bannerId } }).catch(() => null);
+  await cleanupUploads([banner?.imageUrl]);
   revalidatePath("/admin/banners");
   return { ok: true };
 }

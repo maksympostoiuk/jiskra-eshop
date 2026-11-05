@@ -143,17 +143,3 @@ export function discountPercent(price: number, oldPrice: number | null | undefin
   if (!oldPrice || oldPrice <= price || oldPrice <= 0) return 0;
   return Math.floor(((oldPrice - price) * 100) / oldPrice);
 }
-
-/** Pick the price for the requested currency from a record with both prices. */
-export function pickPrice<T extends { priceCzk: number; priceUsd: number }>(
-  item: T,
-  currency: Currency,
-): number {
-  return currency === "CZK" ? item.priceCzk : item.priceUsd;
-}
-
-export function pickOldPrice<
-  T extends { oldPriceCzk: number | null; oldPriceUsd: number | null },
->(item: T, currency: Currency): number | null {
-  return currency === "CZK" ? item.oldPriceCzk : item.oldPriceUsd;
-}

@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
+import { formatRating } from "@/lib/format";
 import type { ProductCardData } from "@/server/catalog";
 import { Price } from "./price";
 import { CompareButton, FavoriteButton, QuickAddButton } from "./product-actions";
@@ -36,7 +37,8 @@ function Availability({ inStock }: { inStock: boolean }) {
 export function ProductCard({ product, view = "grid", priority = false }: { product: ProductCardData; view?: "grid" | "list"; priority?: boolean }) {
   const t = useTranslations("catalog.card");
   const locale = useLocale();
-  const ratingLabel = t("ratingLabel", { rating: product.ratingAvg.toFixed(1), count: product.ratingCount });
+  const rating = formatRating(product.ratingAvg, locale);
+  const ratingLabel = t("ratingLabel", { rating, count: product.ratingCount });
   const link = `/product/${product.slug}`;
 
   const image = (
@@ -65,12 +67,12 @@ export function ProductCard({ product, view = "grid", priority = false }: { prod
       </ul>
     ) : null;
 
-  const rating =
+  const ratingBlock =
     product.ratingCount > 0 ? (
       <span className="inline-flex items-center gap-1.5 text-xs text-ink-soft">
         <Stars rating={product.ratingAvg} label={ratingLabel} />
         <span aria-hidden="true">
-          {product.ratingAvg.toFixed(1)} ({product.ratingCount})
+          {rating} ({product.ratingCount})
         </span>
       </span>
     ) : (
@@ -95,7 +97,7 @@ export function ProductCard({ product, view = "grid", priority = false }: { prod
         <div className="min-w-0">
           {title}
           <div className="mt-1.5 flex flex-wrap items-center gap-3">
-            {rating}
+            {ratingBlock}
             {colorDots}
           </div>
           {product.keySpecs.length > 0 && (
@@ -138,7 +140,7 @@ export function ProductCard({ product, view = "grid", priority = false }: { prod
       <div className="mt-1 flex flex-1 flex-col gap-1.5">
         {product.brand && <p className="text-xs tracking-wide text-ink-faint uppercase">{product.brand}</p>}
         {title}
-        {rating}
+        {ratingBlock}
       </div>
       <div className="relative z-10 mt-3 flex items-end justify-between gap-2">
         <div>

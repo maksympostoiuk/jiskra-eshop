@@ -65,7 +65,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {(hero || side.length > 0) && (
         <section aria-label={t("promotions")} className="mt-6 grid gap-4 lg:grid-cols-[1.9fr_1fr]">
           {hero?.tr && (
-            <BannerLink href={hero.tr.linkUrl} className="group relative grid min-h-[22rem] overflow-hidden rounded-2xl p-7 sm:grid-cols-[1fr_0.9fr] sm:p-10" label={hero.tr.title}>
+            <BannerLink href={hero.tr.linkUrl} className="group relative grid min-h-[22rem] overflow-hidden rounded-2xl p-7 sm:grid-cols-[1fr_0.9fr] sm:p-10">
               <span className="absolute inset-0" style={{ background: hero.bgColor }} aria-hidden="true" />
               <div className="relative z-10 flex flex-col justify-end gap-4 self-stretch" style={{ color: hero.textColor }}>
                 <h2 className="text-4xl leading-[1.05] sm:text-5xl lg:text-6xl">{hero.tr.title}</h2>
@@ -87,7 +87,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
             {side.map((b) =>
               b.tr ? (
-                <BannerLink key={b.id} href={b.tr.linkUrl} label={b.tr.title} className="group relative flex min-h-40 items-center gap-4 overflow-hidden rounded-2xl p-6" >
+                <BannerLink key={b.id} href={b.tr.linkUrl} className="group relative flex min-h-40 items-center gap-4 overflow-hidden rounded-2xl p-6">
                   <span className="absolute inset-0" style={{ background: b.bgColor }} aria-hidden="true" />
                   <div className="relative z-10 flex-1" style={{ color: b.textColor }}>
                     <h2 className="text-2xl leading-tight">{b.tr.title}</h2>
@@ -141,7 +141,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {promos.map((b) =>
               b.tr ? (
                 <li key={b.id}>
-                  <BannerLink href={b.tr.linkUrl} label={b.tr.title} className="group relative flex aspect-[4/5] flex-col overflow-hidden rounded-2xl p-5">
+                  <BannerLink href={b.tr.linkUrl} className="group relative flex aspect-[4/5] flex-col overflow-hidden rounded-2xl p-5">
                     <span className="absolute inset-0" style={{ background: b.bgColor }} aria-hidden="true" />
                     <div className="relative z-10" style={{ color: b.textColor }}>
                       <h3 className="text-2xl leading-tight">{b.tr.title}</h3>

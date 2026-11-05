@@ -10,6 +10,7 @@ import { Stars } from "@/components/store/rating";
 import { ShopImage } from "@/components/store/shop-image";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
+import { formatRating } from "@/lib/format";
 import { getCompareData, type CompareGroup } from "@/server/store-actions";
 
 export function CompareView({ currency }: { currency: string }) {
@@ -97,7 +98,7 @@ export function CompareView({ currency }: { currency: string }) {
               <th scope="row" className="sticky left-0 bg-surface p-4 text-left font-normal text-ink-soft">{t("rating")}</th>
               {group.products.map((p) => (
                 <td key={p.id} className="p-4">
-                  {p.ratingCount ? <Stars rating={p.ratingAvg} label={`${p.ratingAvg.toFixed(1)} / 5`} /> : "—"}
+                  {p.ratingCount ? <Stars rating={p.ratingAvg} label={t("ratingLabel", { rating: formatRating(p.ratingAvg, locale) })} /> : "—"}
                 </td>
               ))}
             </tr>

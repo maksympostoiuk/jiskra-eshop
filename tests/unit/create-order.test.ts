@@ -72,6 +72,14 @@ describe("createOrder (integration)", () => {
     expect(order.searchText).toContain("mallory");
   });
 
+  it("refuses products whose category was deactivated", async () => {
+    await db.productVariant.update({ where: { id: variantId }, data: { stock: 5 } });
+    const product = await db.product.findUniqueOrThrow({ where: { id: productId } });
+    await db.category.update({ where: { id: product.categoryId }, data: { isActive: false } });
+    await expect(createOrder(db, { lines: [{ variantId, qty: 1 }], currency: "CZK", locale: "cs", contact, shippingMethodId: shippingId, paymentMethod: "cod" })).rejects.toMatchObject({ code: "UNAVAILABLE" });
+    await db.category.update({ where: { id: product.categoryId }, data: { isActive: true } });
+  });
+
   it("rejects unknown shipping methods and unknown variants", async () => {
     await expect(createOrder(db, { lines: [{ variantId, qty: 1 }], currency: "CZK", locale: "cs", contact, shippingMethodId: "nope", paymentMethod: "cod" })).rejects.toBeInstanceOf(OrderError);
     await expect(createOrder(db, { lines: [{ variantId: "missing", qty: 1 }], currency: "CZK", locale: "cs", contact, shippingMethodId: shippingId, paymentMethod: "cod" })).rejects.toMatchObject({ code: "UNAVAILABLE" });

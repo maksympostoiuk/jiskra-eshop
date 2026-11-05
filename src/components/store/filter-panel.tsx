@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useModal } from "@/lib/hooks/use-modal";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, LayoutGrid, List, SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -61,6 +62,9 @@ export function FilterPanel({ facets, filters: serverFilters, currency, extra = 
   const locale = useLocale();
   const { filters, apply, pending } = useFilters(serverFilters, extra);
   const [drawer, setDrawer] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeDrawer = useCallback(() => setDrawer(false), []);
+  useModal(drawer, closeDrawer, drawerRef);
   const [pmin, setPmin] = useState(filters.priceMin !== null ? String(filters.priceMin / 100) : "");
   const [pmax, setPmax] = useState(filters.priceMax !== null ? String(filters.priceMax / 100) : "");
   useEffect(() => {
@@ -148,12 +152,12 @@ export function FilterPanel({ facets, filters: serverFilters, currency, extra = 
       </button>
       <div className="hidden rounded-xl border border-line/70 bg-surface px-4 shadow-card lg:block">{panel}</div>
       {drawer && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t("title")}>
-          <button type="button" className="absolute inset-0 bg-ink/40" aria-label={t("close")} onClick={() => setDrawer(false)} />
+        <div ref={drawerRef} className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t("title")}>
+          <div className="absolute inset-0 bg-ink/40" aria-hidden="true" onClick={closeDrawer} />
           <div className="absolute inset-y-0 right-0 flex w-[min(24rem,90vw)] flex-col bg-surface">
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
               <h2 className="text-xl">{t("title")}</h2>
-              <button type="button" onClick={() => setDrawer(false)} aria-label={t("close")} className="grid size-10 place-items-center rounded-full hover:bg-muted" autoFocus>
+              <button type="button" onClick={() => setDrawer(false)} aria-label={t("close")} className="grid size-10 place-items-center rounded-full hover:bg-muted">
                 <X className="size-5" aria-hidden="true" />
               </button>
             </div>

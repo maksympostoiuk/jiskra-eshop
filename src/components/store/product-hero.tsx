@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, ChevronLeft, ChevronRight, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Store, Truck } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { formatRating } from "@/lib/format";
 import { defaultVariant, optionState, selectOption } from "@/lib/catalog/variants";
 import { formatMoney, type Currency } from "@/lib/money";
 import type { OptionGroupView, ProductImageView, ProductVariantView } from "@/server/product-page";
@@ -130,8 +131,8 @@ export function ProductHero({
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
           {product.ratingCount > 0 ? (
             <a href="#reviews" className="inline-flex items-center gap-1.5 hover:underline">
-              <Stars rating={product.ratingAvg} label={t("ratingLabel", { rating: product.ratingAvg.toFixed(1) })} />
-              <span className="font-semibold">{product.ratingAvg.toFixed(1)}</span>
+              <Stars rating={product.ratingAvg} label={t("ratingLabel", { rating: formatRating(product.ratingAvg, locale) })} />
+              <span className="font-semibold">{formatRating(product.ratingAvg, locale)}</span>
               <span className="text-ink-soft">{t("reviewsCount", { count: product.ratingCount })}</span>
             </a>
           ) : (

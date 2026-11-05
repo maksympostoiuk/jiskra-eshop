@@ -10,6 +10,7 @@ import { getStorage, MAX_UPLOAD_BYTES, ALLOWED_IMAGE_TYPES } from "@/lib/storage
 import { sniffImageType } from "@/lib/storage/sniff";
 import { productSchema, type ProductInput } from "@/lib/validation/admin";
 import { persistProduct } from "@/lib/catalog/save-product";
+import { cleanupUploads } from "../uploads";
 import { isUniqueViolation, validateInput, type ActionResult } from "../action";
 
 export async function saveProduct(productId: string | null, input: ProductInput): Promise<ActionResult<{ id: string }>> {
@@ -56,6 +57,7 @@ export async function saveProduct(productId: string | null, input: ProductInput)
     ).map((s) => s.id),
   );
 
+  const previousImages = productId ? (await prisma.productImage.findMany({ where: { productId }, select: { url: true } })).map((i) => i.url) : [];
   let id: string;
   try {
     id = await persistProduct(prisma, existing, data, allowedSpecIds);
@@ -65,25 +67,16 @@ export async function saveProduct(productId: string | null, input: ProductInput)
     throw error;
   }
 
+  await cleanupUploads(previousImages);
   revalidatePath("/admin/products");
   return { ok: true, data: { id }, message: t("saved") };
 }
 
 export async function deleteProduct(productId: string): Promise<ActionResult> {
   await requireAdmin();
+  const images = await prisma.productImage.findMany({ where: { productId }, select: { url: true } });
   await prisma.product.delete({ where: { id: productId } }).catch(() => null);
-  revalidatePath("/admin/products");
-  return { ok: true };
-}
-
-export async function setProductStatus(productId: string, status: "DRAFT" | "PUBLISHED"): Promise<ActionResult> {
-  await requireAdmin();
-  const product = await prisma.product.findUnique({ where: { id: productId }, select: { publishedAt: true } });
-  if (!product) return { ok: false };
-  await prisma.product.update({
-    where: { id: productId },
-    data: { status, publishedAt: status === "PUBLISHED" ? (product.publishedAt ?? new Date()) : product.publishedAt },
-  });
+  await cleanupUploads(images.map((i) => i.url));
   revalidatePath("/admin/products");
   return { ok: true };
 }

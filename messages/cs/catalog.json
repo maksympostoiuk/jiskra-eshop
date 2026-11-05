@@ -93,6 +93,7 @@
     "parameter": "Parametr",
     "remove": "Odebrat {name} z porovnání",
     "brand": "Značka",
-    "rating": "Hodnocení"
+    "rating": "Hodnocení",
+    "ratingLabel": "Hodnocení {rating} z 5"
   }
 }

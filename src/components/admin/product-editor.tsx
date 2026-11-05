@@ -261,8 +261,8 @@ export function ProductEditor({
                                     className="h-8 w-9 shrink-0 cursor-pointer rounded border border-line bg-transparent"
                                   />
                                 )}
-                                <Input className="h-8" aria-label={`${tOpt(name)} (CS)`} placeholder="CS" value={o.labelCs} onChange={(e) => updateOption(i, name, { labelCs: e.target.value })} />
-                                <Input className="h-8" aria-label={`${tOpt(name)} (EN)`} placeholder="EN" value={o.labelEn} onChange={(e) => updateOption(i, name, { labelEn: e.target.value })} />
+                                <Input className="h-8" aria-label={`${tOpt(name)} – ${tc("locale.cs")}`} placeholder={tc("locale.cs")} value={o.labelCs} onChange={(e) => updateOption(i, name, { labelCs: e.target.value })} />
+                                <Input className="h-8" aria-label={`${tOpt(name)} – ${tc("locale.en")}`} placeholder={tc("locale.en")} value={o.labelEn} onChange={(e) => updateOption(i, name, { labelEn: e.target.value })} />
                               </div>
                               {Object.entries(errors)
                                 .filter(([k]) => k.startsWith(op))
@@ -343,8 +343,8 @@ export function ProductEditor({
                   <fieldset key={s.id} className="flex flex-col gap-1.5">
                     <legend className="mb-1.5 text-sm font-medium">{label}</legend>
                     <div className="flex gap-2">
-                      <Input aria-label={`${label} (CS)`} placeholder="CS" value={value.textCs} onChange={(e) => setSpec(s.id, { textCs: e.target.value })} />
-                      <Input aria-label={`${label} (EN)`} placeholder="EN" value={value.textEn} onChange={(e) => setSpec(s.id, { textEn: e.target.value })} />
+                      <Input aria-label={`${label} – ${tc("locale.cs")}`} placeholder={tc("locale.cs")} value={value.textCs} onChange={(e) => setSpec(s.id, { textCs: e.target.value })} />
+                      <Input aria-label={`${label} – ${tc("locale.en")}`} placeholder={tc("locale.en")} value={value.textEn} onChange={(e) => setSpec(s.id, { textEn: e.target.value })} />
                     </div>
                   </fieldset>
                 );

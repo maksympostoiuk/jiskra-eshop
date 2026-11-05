@@ -4,7 +4,7 @@ import { pickTranslation } from "@/lib/i18n-content";
 import { formatMoney } from "@/lib/money";
 import { normalizeText } from "@/lib/text";
 import { DEFAULT_LOCALE, isLocale } from "@/i18n/routing";
-import { getCategoryTree, searchScope } from "@/server/catalog";
+import { getCategoryTree, searchScope, visibleProductWhere } from "@/server/catalog";
 import { getCurrency } from "@/server/currency";
 
 /** Search suggestions: matching categories and products for the header dropdown. */
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     .map((c) => ({ name: c.name, slug: c.slug, count: c.productCount }));
 
   const products = await prisma.product.findMany({
-    where: { status: "PUBLISHED", ...searchScope(q, locale) },
+    where: { AND: [await visibleProductWhere(locale), searchScope(q, locale)] },
     orderBy: { soldCount: "desc" },
     take: 6,
     include: { translations: true, images: { orderBy: { sortOrder: "asc" }, take: 1 } },

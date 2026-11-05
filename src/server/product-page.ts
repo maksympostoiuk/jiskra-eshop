@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { formatSpecValue } from "@/lib/catalog/spec-format";
 import { pickLocalized, pickTranslation } from "@/lib/i18n-content";
 import type { Currency } from "@/lib/money";
-import { getCards, getCategoryPath, getSpecDefsForCategory } from "./catalog";
+import { getCards, getCategoryPath, getSpecDefsForCategory, visibleProductWhere } from "./catalog";
 
 export type ProductVariantView = { id: string; sku: string; price: number; oldPrice: number | null; stock: number; options: Record<string, string> };
 export type OptionGroupView = { name: string; values: Array<{ value: string; label: string; hex: string | null }> };
@@ -19,7 +19,7 @@ export async function getProductPage(slug: string, locale: string, currency: Cur
     return target ? { redirectSlug: target.slug } : null;
   }
   const product = await prisma.product.findFirst({
-    where: { id: tr.productId, status: "PUBLISHED" },
+    where: { AND: [{ id: tr.productId }, await visibleProductWhere(locale)] },
     include: {
       translations: true,
       brand: true,

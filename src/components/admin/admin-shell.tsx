@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useRef, useState, useTransition, type ReactNode } from "react";
+import { useModal } from "@/lib/hooks/use-modal";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Award,
@@ -24,7 +25,6 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/cn";
 import { logout, setAdminLocale } from "@/server/admin/auth";
-import { useRouter } from "next/navigation";
 
 const NAV = [
   { href: "/admin", key: "dashboard", Icon: Gauge, exact: true },
@@ -54,6 +54,9 @@ export function AdminShell({
   const locale = useLocale();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const close = useCallback(() => setOpen(false), []);
+  useModal(open, close, drawerRef);
   const [, startTransition] = useTransition();
 
   const nav = (
@@ -100,8 +103,8 @@ export function AdminShell({
 
       {/* Mobile drawer */}
       {open && (
-        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label={t("nav.label")}>
-          <button className="absolute inset-0 bg-ink/40" aria-label={t("nav.close")} onClick={() => setOpen(false)} />
+        <div ref={drawerRef} className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label={t("nav.label")}>
+          <div className="absolute inset-0 bg-ink/40" aria-hidden="true" onClick={close} />
           <div className="absolute inset-y-0 left-0 flex w-72 flex-col gap-6 overflow-y-auto bg-surface px-3 py-5">
             <div className="flex items-center justify-between px-4">
               <Logo className="text-2xl" />

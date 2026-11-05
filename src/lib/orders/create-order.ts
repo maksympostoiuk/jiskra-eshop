@@ -1,5 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 import { refreshProductAggregates } from "@/lib/catalog/aggregates";
+import { visibleCategoryIds } from "@/lib/catalog/category-tree";
 import type { CartLine } from "@/lib/cart";
 import { pickLocalized, pickTranslation } from "@/lib/i18n-content";
 import type { Currency } from "@/lib/money";
@@ -64,6 +65,7 @@ export async function createOrder(db: PrismaClient, input: CreateOrderInput) {
         product: { include: { translations: true, images: { orderBy: { sortOrder: "asc" }, take: 1 } } },
       },
     });
+    const visible = visibleCategoryIds(await tx.category.findMany({ select: { id: true, parentId: true, sortOrder: true, isActive: true } }));
     const forOrder: VariantForOrder[] = variants.map((v) => ({
       id: v.id,
       productId: v.productId,
@@ -71,7 +73,7 @@ export async function createOrder(db: PrismaClient, input: CreateOrderInput) {
       priceCzk: v.priceCzk,
       priceUsd: v.priceUsd,
       stock: v.stock,
-      published: v.product.status === "PUBLISHED",
+      published: v.product.status === "PUBLISHED" && visible.has(v.product.categoryId),
       productName: pickTranslation(v.product.translations, input.locale)?.name ?? v.sku,
       variantName: v.options.map((o) => pickLocalized(o.labelCs, o.labelEn, input.locale)).join(", "),
       imageUrl: v.product.images[0]?.url ?? null,

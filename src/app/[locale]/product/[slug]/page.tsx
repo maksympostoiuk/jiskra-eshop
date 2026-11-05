@@ -11,6 +11,7 @@ import { redirect } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { defaultVariant } from "@/lib/catalog/variants";
 import { formatMoney } from "@/lib/money";
+import { formatRating } from "@/lib/format";
 import { siteUrl } from "@/lib/site";
 import { truncate } from "@/lib/text";
 import { getCurrency } from "@/server/currency";
@@ -121,9 +122,9 @@ export default async function ProductPage({ params }: Props) {
           <div className="flex flex-col gap-6">
             <div className="rounded-2xl bg-surface p-6 shadow-card">
               <div className="flex items-end gap-3">
-                <span className="font-display text-6xl leading-none">{product.ratingCount ? product.ratingAvg.toFixed(1) : "–"}</span>
+                <span className="font-display text-6xl leading-none">{product.ratingCount ? formatRating(product.ratingAvg, locale) : "–"}</span>
                 <div className="pb-1">
-                  <Stars rating={product.ratingAvg} size="md" label={t("ratingLabel", { rating: product.ratingAvg.toFixed(1) })} />
+                  <Stars rating={product.ratingAvg} size="md" label={t("ratingLabel", { rating: formatRating(product.ratingAvg, locale) })} />
                   <p className="text-sm text-ink-soft">{t("reviewsCount", { count: product.ratingCount })}</p>
                 </div>
               </div>

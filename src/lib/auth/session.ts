@@ -7,7 +7,9 @@ import type { AdminRole } from "@/lib/domain";
 import { randomToken } from "@/lib/random";
 import { hashToken } from "./tokens";
 
-export const ADMIN_SESSION_COOKIE = "admin_session";
+import { ADMIN_SESSION_COOKIE } from "./cookies";
+
+export { ADMIN_SESSION_COOKIE };
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type AdminIdentity = { id: string; email: string; name: string; role: AdminRole };

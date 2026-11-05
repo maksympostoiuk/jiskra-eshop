@@ -1,8 +1,8 @@
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
+import { ADMIN_SESSION_COOKIE } from "./lib/auth/cookies";
 
-const ADMIN_SESSION_COOKIE = "admin_session";
 const intlMiddleware = createIntlMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
