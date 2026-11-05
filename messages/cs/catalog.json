@@ -1,1 +1,98 @@
-{}
+{
+  "card": {
+    "removeFavorite": "Odebrat z oblíbených",
+    "addFavorite": "Přidat do oblíbených",
+    "inFavorites": "V oblíbených",
+    "favorite": "Oblíbené",
+    "removeCompare": "Odebrat z porovnání",
+    "addCompare": "Přidat do porovnání",
+    "addedCompare": "Přidáno do porovnání.",
+    "openCompare": "Porovnat",
+    "inCompare": "V porovnání",
+    "compare": "Porovnat",
+    "addedToCart": "Přidáno do košíku.",
+    "openCart": "Do košíku",
+    "addToCartNamed": "Přidat {name} do košíku",
+    "soldOut": "Vyprodáno",
+    "addToCart": "Do košíku",
+    "inStock": "Skladem",
+    "ratingLabel": "Hodnocení {rating} z 5 ({count, plural, one {# recenze} few {# recenze} other {# recenzí}})",
+    "colors": "{count, plural, few {# barvy} other {# barev}}",
+    "noReviews": "Zatím bez recenzí",
+    "oldPrice": "Původní cena"
+  },
+  "filters": {
+    "title": "Filtry",
+    "clearAll": "Zrušit filtry ({count})",
+    "availability": "Dostupnost",
+    "inStock": "Pouze skladem",
+    "price": "Cena ({currency})",
+    "priceFrom": "Cena od",
+    "priceTo": "Cena do",
+    "apply": "OK",
+    "upTo": "do {amount}",
+    "from": "od {amount}",
+    "brand": "Značka",
+    "rating": "Hodnocení",
+    "ratingAtLeast": "{rating} a více hvězdiček",
+    "close": "Zavřít filtry",
+    "showResults": "Zobrazit výsledky"
+  },
+  "results": "{count, plural, =0 {Žádné produkty} one {# produkt} few {# produkty} other {# produktů}}",
+  "sort": {
+    "label": "Řadit:",
+    "popular": "Nejprodávanější",
+    "price_asc": "Od nejlevnějšího",
+    "price_desc": "Od nejdražšího",
+    "newest": "Nejnovější",
+    "rating": "Nejlépe hodnocené"
+  },
+  "view": {
+    "label": "Zobrazení",
+    "grid": "Mřížka",
+    "list": "Seznam"
+  },
+  "empty": {
+    "title": "Nic jsme nenašli",
+    "text": "Zkuste upravit nebo zrušit některé filtry."
+  },
+  "pagination": {
+    "label": "Stránkování",
+    "prev": "Předchozí",
+    "next": "Další",
+    "page": "Strana {page}"
+  },
+  "metaDescription": "{name} v e-shopu Jiskra – přehledné parametry, recenze, rychlé doručení.",
+  "productCount": "{count, plural, one {# produkt} few {# produkty} other {# produktů}}",
+  "subcategories": "Podkategorie",
+  "search": {
+    "title": "Vyhledávání",
+    "titleFor": "Výsledky pro „{q}“",
+    "allProducts": "Všechny produkty"
+  },
+  "favorites": {
+    "title": "Oblíbené",
+    "loading": "Načítám…",
+    "emptyTitle": "Zatím žádné oblíbené",
+    "emptyText": "Srdíčkem si uložte produkty, ke kterým se chcete vrátit.",
+    "browse": "Procházet katalog",
+    "count": "{count, plural, one {# produkt} few {# produkty} other {# produktů}}",
+    "clear": "Vymazat vše"
+  },
+  "compare": {
+    "title": "Porovnání",
+    "loading": "Načítám…",
+    "emptyTitle": "Porovnání je prázdné",
+    "emptyText": "Přidejte produkty ikonou vah a porovnejte jejich parametry vedle sebe.",
+    "browse": "Procházet katalog",
+    "hint": "Produkty porovnáváme v rámci jedné kategorie.",
+    "categories": "Kategorie v porovnání",
+    "diffOnly": "Jen rozdílné parametry",
+    "clearGroup": "Odebrat všechny z této kategorie",
+    "caption": "Porovnání produktů: {category}",
+    "parameter": "Parametr",
+    "remove": "Odebrat {name} z porovnání",
+    "brand": "Značka",
+    "rating": "Hodnocení"
+  }
+}

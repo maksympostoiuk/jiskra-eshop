@@ -1,1 +1,98 @@
-{}
+{
+  "card": {
+    "removeFavorite": "Remove from favourites",
+    "addFavorite": "Add to favourites",
+    "inFavorites": "In favourites",
+    "favorite": "Favourite",
+    "removeCompare": "Remove from comparison",
+    "addCompare": "Add to comparison",
+    "addedCompare": "Added to comparison.",
+    "openCompare": "Compare",
+    "inCompare": "In comparison",
+    "compare": "Compare",
+    "addedToCart": "Added to cart.",
+    "openCart": "View cart",
+    "addToCartNamed": "Add {name} to cart",
+    "soldOut": "Sold out",
+    "addToCart": "Add to cart",
+    "inStock": "In stock",
+    "ratingLabel": "Rated {rating} out of 5 ({count, plural, one {# review} other {# reviews}})",
+    "colors": "{count} colours",
+    "noReviews": "No reviews yet",
+    "oldPrice": "Previous price"
+  },
+  "filters": {
+    "title": "Filters",
+    "clearAll": "Clear filters ({count})",
+    "availability": "Availability",
+    "inStock": "In stock only",
+    "price": "Price ({currency})",
+    "priceFrom": "Price from",
+    "priceTo": "Price to",
+    "apply": "OK",
+    "upTo": "up to {amount}",
+    "from": "from {amount}",
+    "brand": "Brand",
+    "rating": "Rating",
+    "ratingAtLeast": "{rating} stars & up",
+    "close": "Close filters",
+    "showResults": "Show results"
+  },
+  "results": "{count, plural, =0 {No products} one {# product} other {# products}}",
+  "sort": {
+    "label": "Sort:",
+    "popular": "Bestselling",
+    "price_asc": "Price: low to high",
+    "price_desc": "Price: high to low",
+    "newest": "Newest",
+    "rating": "Top rated"
+  },
+  "view": {
+    "label": "View",
+    "grid": "Grid",
+    "list": "List"
+  },
+  "empty": {
+    "title": "Nothing found",
+    "text": "Try changing or clearing some filters."
+  },
+  "pagination": {
+    "label": "Pagination",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {page}"
+  },
+  "metaDescription": "{name} at Jiskra – clear specifications, reviews and fast delivery.",
+  "productCount": "{count, plural, one {# product} other {# products}}",
+  "subcategories": "Subcategories",
+  "search": {
+    "title": "Search",
+    "titleFor": "Results for “{q}”",
+    "allProducts": "All products"
+  },
+  "favorites": {
+    "title": "Favourites",
+    "loading": "Loading…",
+    "emptyTitle": "No favourites yet",
+    "emptyText": "Tap the heart to save products you want to come back to.",
+    "browse": "Browse the catalog",
+    "count": "{count, plural, one {# product} other {# products}}",
+    "clear": "Clear all"
+  },
+  "compare": {
+    "title": "Compare",
+    "loading": "Loading…",
+    "emptyTitle": "Nothing to compare yet",
+    "emptyText": "Add products with the scales icon to compare their specifications side by side.",
+    "browse": "Browse the catalog",
+    "hint": "Products are compared within one category.",
+    "categories": "Categories in comparison",
+    "diffOnly": "Differences only",
+    "clearGroup": "Remove all from this category",
+    "caption": "Product comparison: {category}",
+    "parameter": "Specification",
+    "remove": "Remove {name} from comparison",
+    "brand": "Brand",
+    "rating": "Rating"
+  }
+}

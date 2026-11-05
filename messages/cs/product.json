@@ -1,1 +1,66 @@
-{}
+{
+  "gallery": {
+    "thumbnails": "Náhledy obrázků",
+    "show": "Zobrazit obrázek {n}",
+    "prev": "Předchozí obrázek",
+    "next": "Další obrázek"
+  },
+  "ratingLabel": "Hodnocení {rating} z 5",
+  "reviewsCount": "{count, plural, =0 {bez recenzí} one {# recenze} few {# recenze} other {# recenzí}}",
+  "firstReview": "Napište první recenzi",
+  "sku": "Kód",
+  "allSpecs": "Všechny parametry",
+  "buy": {
+    "optionSoldOut": "vyprodáno",
+    "optionOther": "jiná kombinace",
+    "oldPrice": "Původní cena",
+    "youSave": "Ušetříte {amount}",
+    "quantity": "Množství",
+    "decrease": "Snížit množství",
+    "increase": "Zvýšit množství",
+    "addToCart": "Přidat do košíku",
+    "soldOut": "Vyprodáno",
+    "inStock": "Skladem",
+    "lowStock": "Poslední kusy ({count} ks)",
+    "buy": "Koupit"
+  },
+  "delivery": {
+    "courier": "Doručení domů",
+    "courierText": "Následující pracovní den",
+    "pickup": "Osobní odběr",
+    "pickupText": "Praha 2, do 2 hodin, zdarma",
+    "returns": "30 dní na vrácení",
+    "returnsText": "Bez udání důvodu",
+    "warranty": "Záruka 24 měsíců a bezpečný nákup",
+    "freeFrom": "Zdarma od {amount}"
+  },
+  "subnav": {
+    "label": "Sekce produktu",
+    "description": "Popis",
+    "specs": "Parametry",
+    "reviews": "Recenze ({count})",
+    "related": "Podobné produkty"
+  },
+  "specsCaption": "Parametry produktu {name}",
+  "noSpecs": "Parametry zatím nejsou uvedené.",
+  "reviews": {
+    "title": "Recenze zákazníků",
+    "distribution": "{stars} hvězdiček: {count}",
+    "empty": "Zatím zde nejsou žádné recenze. Buďte první!",
+    "otherLanguage": "Recenze v jiném jazyce",
+    "formTitle": "Napsat recenzi",
+    "yourRating": "Vaše hodnocení",
+    "stars": "{count, plural, one {# hvězdička} few {# hvězdičky} other {# hvězdiček}}",
+    "name": "Jméno",
+    "email": "E-mail",
+    "emailHint": "Nebude zveřejněn.",
+    "text": "Vaše zkušenost",
+    "moderationNote": "Recenze zveřejníme po schválení.",
+    "sending": "Odesílám…",
+    "submit": "Odeslat recenzi",
+    "thanks": "Děkujeme! Recenzi zveřejníme po schválení.",
+    "tooMany": "Příliš mnoho recenzí za krátkou dobu. Zkuste to později.",
+    "error": "Recenzi se nepodařilo uložit."
+  },
+  "related": "Podobné produkty"
+}

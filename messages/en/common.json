@@ -3,8 +3,65 @@
     "name": "Jiskra",
     "tagline": "Electronics that make sense"
   },
-  "home": {
-    "comingSoon": "The shop is being set up"
+  "skipToContent": "Skip to content",
+  "yes": "Yes",
+  "no": "No",
+  "breadcrumbs": {
+    "home": "Home",
+    "label": "Breadcrumb"
+  },
+  "seo": {
+    "title": "Jiskra – electronics that make sense",
+    "siteName": "Jiskra",
+    "description": "Phones, laptops, TVs, audio and more. Fast delivery, 30-day returns and prices in CZK or USD."
+  },
+  "search": {
+    "label": "Search the shop",
+    "placeholder": "Search phones, laptops, headphones…",
+    "clear": "Clear search",
+    "submit": "Search",
+    "suggestions": "Suggestions",
+    "noResults": "Nothing found for “{q}”.",
+    "categories": "Categories",
+    "products": "Products",
+    "showAll": "Show all results for “{q}”"
+  },
+  "catalog": {
+    "button": "Catalog",
+    "showAll": "All in this category ({count})",
+    "products": "{count, plural, one {# product} other {# products}}",
+    "toggle": "Subcategories: {name}"
+  },
+  "header": {
+    "freeShipping": "Free shipping from {amount}",
+    "home": "Jiskra – home page",
+    "actions": "Shopping tools",
+    "compare": "Compare",
+    "favorites": "Favourites",
+    "cart": "Cart",
+    "compareCount": "Compare ({count})",
+    "favoritesCount": "Favourites ({count})",
+    "cartCount": "Cart ({count} items)",
+    "language": "Language",
+    "currency": "Currency"
+  },
+  "footer": {
+    "about": "Carefully chosen electronics, clear specifications and fair prices. We are happy to help you choose.",
+    "catalog": "Catalog",
+    "shopping": "Shopping",
+    "cart": "Cart",
+    "favorites": "Favourites",
+    "compare": "Compare",
+    "search": "All products",
+    "delivery": "Delivery",
+    "payment": "Payment",
+    "copyright": "© {year} {name}",
+    "demo": "Demo shop – products and brands are fictional."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The link may be outdated or the product is no longer sold. Try the search or the catalog.",
+    "home": "Back to home"
   },
   "orderStatus": {
     "NEW": "New",

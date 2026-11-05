@@ -3,8 +3,65 @@
     "name": "Jiskra",
     "tagline": "Elektronika, která dává smysl"
   },
-  "home": {
-    "comingSoon": "Obchod se připravuje"
+  "skipToContent": "Přeskočit na obsah",
+  "yes": "Ano",
+  "no": "Ne",
+  "breadcrumbs": {
+    "home": "Úvod",
+    "label": "Drobečková navigace"
+  },
+  "seo": {
+    "title": "Jiskra – elektronika, která dává smysl",
+    "siteName": "Jiskra",
+    "description": "Telefony, notebooky, televize, audio a další elektronika. Rychlé doručení, 30 dní na vrácení a ceny v CZK i USD."
+  },
+  "search": {
+    "label": "Hledat v obchodě",
+    "placeholder": "Hledat telefon, notebook, sluchátka…",
+    "clear": "Smazat hledání",
+    "submit": "Hledat",
+    "suggestions": "Návrhy",
+    "noResults": "Pro „{q}“ jsme nic nenašli.",
+    "categories": "Kategorie",
+    "products": "Produkty",
+    "showAll": "Zobrazit všechny výsledky pro „{q}“"
+  },
+  "catalog": {
+    "button": "Katalog",
+    "showAll": "Vše v kategorii ({count})",
+    "products": "{count, plural, one {# produkt} few {# produkty} other {# produktů}}",
+    "toggle": "Podkategorie: {name}"
+  },
+  "header": {
+    "freeShipping": "Doprava zdarma od {amount}",
+    "home": "Jiskra – úvodní stránka",
+    "actions": "Nákupní nástroje",
+    "compare": "Porovnání",
+    "favorites": "Oblíbené",
+    "cart": "Košík",
+    "compareCount": "Porovnání ({count})",
+    "favoritesCount": "Oblíbené ({count})",
+    "cartCount": "Košík ({count} ks)",
+    "language": "Jazyk",
+    "currency": "Měna"
+  },
+  "footer": {
+    "about": "Pečlivě vybraná elektronika, srozumitelné parametry a férové ceny. Poradíme vám s výběrem.",
+    "catalog": "Katalog",
+    "shopping": "Nákup",
+    "cart": "Košík",
+    "favorites": "Oblíbené",
+    "compare": "Porovnání",
+    "search": "Všechny produkty",
+    "delivery": "Doprava",
+    "payment": "Platba",
+    "copyright": "© {year} {name}",
+    "demo": "Ukázkový obchod – produkty a značky jsou smyšlené."
+  },
+  "notFound": {
+    "title": "Stránku jsme nenašli",
+    "text": "Odkaz je možná zastaralý nebo produkt už neprodáváme. Zkuste vyhledávání nebo katalog.",
+    "home": "Zpět na úvod"
   },
   "orderStatus": {
     "NEW": "Nová",

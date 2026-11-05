@@ -1,1 +1,20 @@
-{}
+{
+  "title": "Jiskra – elektronika, která dává smysl",
+  "promotions": "Akce a novinky",
+  "categories": "Nakupujte podle kategorie",
+  "bestsellers": "Nejprodávanější",
+  "bestsellersAll": "Top produkty",
+  "inspiration": "Inspirace",
+  "newArrivals": "Novinky",
+  "viewAll": "Zobrazit vše",
+  "brands": "Značky",
+  "benefitsLabel": "Proč nakupovat u nás",
+  "benefits": {
+    "shippingTitle": "Rychlé doručení",
+    "shippingText": "Většinu zboží máme skladem a odesíláme do 24 hodin.",
+    "returnsTitle": "30 dní na vrácení",
+    "returnsText": "Zboží můžete vrátit bez udání důvodu.",
+    "warrantyTitle": "Záruka 24 měsíců",
+    "warrantyText": "Reklamace vyřizujeme rychle a bez starostí."
+  }
+}

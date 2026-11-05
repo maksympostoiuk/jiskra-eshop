@@ -1,1 +1,66 @@
-{}
+{
+  "gallery": {
+    "thumbnails": "Image thumbnails",
+    "show": "Show image {n}",
+    "prev": "Previous image",
+    "next": "Next image"
+  },
+  "ratingLabel": "Rated {rating} out of 5",
+  "reviewsCount": "{count, plural, =0 {no reviews} one {# review} other {# reviews}}",
+  "firstReview": "Write the first review",
+  "sku": "Code",
+  "allSpecs": "All specifications",
+  "buy": {
+    "optionSoldOut": "sold out",
+    "optionOther": "other combination",
+    "oldPrice": "Previous price",
+    "youSave": "You save {amount}",
+    "quantity": "Quantity",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "addToCart": "Add to cart",
+    "soldOut": "Sold out",
+    "inStock": "In stock",
+    "lowStock": "Only {count} left",
+    "buy": "Buy"
+  },
+  "delivery": {
+    "courier": "Home delivery",
+    "courierText": "Next business day",
+    "pickup": "Store pickup",
+    "pickupText": "Prague 2, within 2 hours, free",
+    "returns": "30-day returns",
+    "returnsText": "No questions asked",
+    "warranty": "24-month warranty and secure checkout",
+    "freeFrom": "Free from {amount}"
+  },
+  "subnav": {
+    "label": "Product sections",
+    "description": "Description",
+    "specs": "Specifications",
+    "reviews": "Reviews ({count})",
+    "related": "Similar products"
+  },
+  "specsCaption": "Specifications of {name}",
+  "noSpecs": "No specifications listed yet.",
+  "reviews": {
+    "title": "Customer reviews",
+    "distribution": "{stars} stars: {count}",
+    "empty": "No reviews yet. Be the first!",
+    "otherLanguage": "Review in another language",
+    "formTitle": "Write a review",
+    "yourRating": "Your rating",
+    "stars": "{count, plural, one {# star} other {# stars}}",
+    "name": "Name",
+    "email": "E-mail",
+    "emailHint": "Won't be published.",
+    "text": "Your experience",
+    "moderationNote": "Reviews are published after moderation.",
+    "sending": "Sending…",
+    "submit": "Submit review",
+    "thanks": "Thank you! Your review will appear after moderation.",
+    "tooMany": "Too many reviews in a short time. Please try later.",
+    "error": "The review could not be saved."
+  },
+  "related": "Similar products"
+}

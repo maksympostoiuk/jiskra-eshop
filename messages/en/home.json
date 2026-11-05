@@ -1,1 +1,20 @@
-{}
+{
+  "title": "Jiskra – electronics that make sense",
+  "promotions": "Offers and news",
+  "categories": "Shop by category",
+  "bestsellers": "Bestsellers",
+  "bestsellersAll": "Top products",
+  "inspiration": "Inspiration",
+  "newArrivals": "New arrivals",
+  "viewAll": "View all",
+  "brands": "Brands",
+  "benefitsLabel": "Why shop with us",
+  "benefits": {
+    "shippingTitle": "Fast delivery",
+    "shippingText": "Most items are in stock and ship within 24 hours.",
+    "returnsTitle": "30-day returns",
+    "returnsText": "Return goods without giving a reason.",
+    "warrantyTitle": "24-month warranty",
+    "warrantyText": "Hassle-free and quick warranty claims."
+  }
+}

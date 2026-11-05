@@ -18,8 +18,8 @@ Living status document: what is done, what is next, decisions and known issues.
 | 0 | Setup: Next.js, TS, Tailwind, Prisma, next-intl, Zod, Vitest, tokens, brand | ✅ done |
 | 1 | Prisma data model + seed | ✅ done |
 | 2 | CMS / admin panel (`/admin`) | ✅ done |
-| 3 | Storefront | ⏳ next |
-| 4 | Cart and checkout | ☐ |
+| 3 | Storefront | ✅ done |
+| 4 | Cart and checkout | ⏳ next |
 | 5 | Quality: tests, e2e, final pass | ☐ |
 
 ## Decisions
@@ -80,6 +80,33 @@ prices in both currencies, free-from thresholds), Counter (order numbers).
   server; messages localized (Zod locales + `validation` namespace). Cross-record checks (unique slug per locale,
   unique SKU, unique spec key) on the server. Deletes go through a confirmation `<dialog>`.
 - **Messages check:** `src/i18n/keys.test.ts` statically verifies that literal translation keys used in code exist.
+
+## Storefront (Phase 3)
+
+Routes (all under `/cs` and `/en`): `/` home, `/category/[slug]`, `/product/[slug]`, `/search?q=`, `/favorites`,
+`/compare` (+ `/cart`, `/checkout`, `/order/[number]` in Phase 4). `sitemap.xml`, `robots.txt` at the root.
+
+- **Header** (`src/components/store/site-header.tsx`): utility bar (free-shipping note, phone, CS/EN + CZK/USD
+  switchers), logo, big "Catalog" button → DNS-style mega-menu (icons left, subcategories with counts right;
+  accordion drawer on mobile), wide search with combobox suggestions (`/api/search`, categories + products,
+  keyboard navigation), compare / favourites / cart icons with live counters. Sticky on ≥ md only.
+- **Language vs currency:** language = URL prefix + `NEXT_LOCALE` cookie; currency = `CURRENCY` cookie set by a server
+  action. Switching language keeps the path; product/category slugs from the other locale redirect to the right
+  slug. Spec facet params (`f_*`) are dropped on language switch because their values are localized.
+- **Home:** editorial hero (HERO + 2× HERO_SIDE banners, scheduled via CMS), round category tiles, bestsellers with
+  category chips, promo tiles (PROMO banners), new arrivals, brand strip, benefits.
+- **Category:** breadcrumbs (+ BreadcrumbList JSON-LD), subcategory chips, filter sidebar / mobile drawer (availability,
+  price inputs + presets, brand, rating, filterable specs from the category's SpecDefinitions with counts), sorting,
+  grid/list toggle (list shows key specs), pagination. All filter state lives in the URL (`src/lib/catalog/filters.ts`).
+  Facet counts are computed over the unfiltered category scope (simple, keeps options visible).
+- **Product:** gallery with thumbnails (images follow the selected colour), variant selectors (swatches + buttons,
+  sold-out / other-combination states) updating price, old price/discount, stock and SKU; quantity + add to cart,
+  favourite, compare; sticky sub-nav (Description / Specs / Reviews / Similar) with scroll-spy and mini buy button;
+  specs table; approved reviews with distribution + review form (pending moderation, honeypot, rate-limited);
+  related products; Product + AggregateOffer + AggregateRating JSON-LD; hreflang alternates.
+- **Favourites & compare:** ids in localStorage (`src/components/store/client-store.ts`); compare page groups by
+  category with a shared spec table and "differences only".
+- **Images:** `next/image`; generated SVG placeholders are served unoptimized, uploads are optimized.
 
 ## Known issues
 
