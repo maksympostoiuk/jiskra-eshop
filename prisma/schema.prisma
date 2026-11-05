@@ -284,10 +284,39 @@ model Customer {
   lastName     String   @default("")
   phone        String?
   /// null = guest customer without an account
-  passwordHash String?
-  orders       Order[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  passwordHash    String?
+  /// set once the customer proved ownership of the e-mail; required to sign in and to see order history
+  emailVerifiedAt DateTime?
+  orders          Order[]
+  sessions        CustomerSession[]
+  tokens          CustomerToken[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model CustomerSession {
+  /// SHA-256 of the random session token stored in the httpOnly cookie
+  id         String   @id
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([customerId])
+}
+
+/// One-time e-mail tokens (e-mail verification, password reset). Only the SHA-256 is stored.
+model CustomerToken {
+  id         String    @id
+  customerId String
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  /// VERIFY_EMAIL | RESET_PASSWORD
+  purpose    String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([customerId, purpose])
 }
 
 model Order {

@@ -1,1 +1,65 @@
-{}
+{
+  "title": "Můj účet",
+  "greeting": "Dobrý den, {name}",
+  "logout": "Odhlásit se",
+  "verified": "E-mail je ověřený a jste přihlášeni. Vítejte!",
+  "working": "Pracuji…",
+  "fields": {
+    "email": "E-mail",
+    "password": "Heslo",
+    "newPassword": "Nové heslo",
+    "passwordHint": "Alespoň 10 znaků.",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
+    "phone": "Telefon"
+  },
+  "errors": {
+    "tooMany": "Příliš mnoho pokusů. Zkuste to prosím později.",
+    "signedOut": "Byli jste odhlášeni. Přihlaste se prosím znovu."
+  },
+  "login": {
+    "title": "Přihlášení",
+    "intro": "Uvidíte své objednávky a pokladnu vám předvyplníme.",
+    "submit": "Přihlásit se",
+    "invalid": "Nesprávný e-mail nebo heslo.",
+    "unverified": "Nejdřív prosím potvrďte e-mail – odkaz jsme vám poslali při registraci.",
+    "verifyInvalid": "Odkaz pro ověření je neplatný nebo vypršel. Zaregistrujte se prosím znovu.",
+    "forgot": "Zapomněli jste heslo?",
+    "noAccount": "Ještě nemáte účet?",
+    "register": "Zaregistrujte se"
+  },
+  "register": {
+    "title": "Registrace",
+    "intro": "Účet je dobrovolný – nakupovat můžete i bez něj.",
+    "submit": "Vytvořit účet",
+    "checkEmail": "Hotovo! Na {email} jsme poslali odkaz pro dokončení registrace.",
+    "haveAccount": "Už účet máte?",
+    "login": "Přihlaste se"
+  },
+  "forgot": {
+    "title": "Zapomenuté heslo",
+    "intro": "Pošleme vám odkaz pro nastavení nového hesla.",
+    "submit": "Poslat odkaz",
+    "sent": "Pokud k adrese existuje účet, poslali jsme na ni odkaz pro obnovení hesla.",
+    "back": "Zpět na přihlášení"
+  },
+  "reset": {
+    "title": "Nové heslo",
+    "submit": "Uložit heslo",
+    "done": "Heslo je změněné a jste přihlášeni.",
+    "invalid": "Odkaz je neplatný nebo vypršel.",
+    "again": "Požádat o nový odkaz",
+    "toAccount": "Přejít na můj účet"
+  },
+  "profile": {
+    "title": "Osobní údaje",
+    "save": "Uložit",
+    "saved": "Údaje jsou uložené."
+  },
+  "orders": {
+    "title": "Moje objednávky",
+    "empty": "Zatím jste u nás nenakupovali.",
+    "shop": "Začít nakupovat",
+    "items": "{count, plural, one {# položka} few {# položky} other {# položek}}"
+  }
+}

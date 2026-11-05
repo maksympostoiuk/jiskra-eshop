@@ -43,7 +43,9 @@
     "favoritesCount": "Favourites ({count})",
     "cartCount": "Cart ({count} items)",
     "language": "Language",
-    "currency": "Currency"
+    "currency": "Currency",
+    "account": "My account",
+    "signIn": "Sign in"
   },
   "footer": {
     "about": "Carefully chosen electronics, clear specifications and fair prices. We are happy to help you choose.",

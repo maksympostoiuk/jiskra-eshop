@@ -43,7 +43,9 @@
     "favoritesCount": "Oblíbené ({count})",
     "cartCount": "Košík ({count} ks)",
     "language": "Jazyk",
-    "currency": "Měna"
+    "currency": "Měna",
+    "account": "Můj účet",
+    "signIn": "Přihlásit"
   },
   "footer": {
     "about": "Pečlivě vybraná elektronika, srozumitelné parametry a férové ceny. Poradíme vám s výběrem.",

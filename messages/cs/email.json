@@ -12,5 +12,20 @@
     "subject": "Objednávka č. {number}: {status}",
     "intro": "stav vaší objednávky č. {number} se změnil na: {status}."
   },
-  "bankTransfer": "Platba převodem: číslo účtu {account}, IBAN {iban}, variabilní symbol {vs}, částka {amount}."
+  "bankTransfer": "Platba převodem: číslo účtu {account}, IBAN {iban}, variabilní symbol {vs}, částka {amount}.",
+  "account": {
+    "ignore": "Pokud jste o nic nežádali, tento e-mail ignorujte.",
+    "verify": {
+      "subject": "Dokončete registraci v Jiskře",
+      "body": "Dobrý den, {name},\ndokončete prosím registraci kliknutím na odkaz (platí 48 hodin):"
+    },
+    "exists": {
+      "subject": "Váš účet v Jiskře",
+      "body": "Někdo se pokusil zaregistrovat s touto adresou, ale účet už máte. Pokud jste zapomněli heslo, obnovte ho zde:"
+    },
+    "reset": {
+      "subject": "Obnovení hesla v Jiskře",
+      "body": "Nové heslo nastavíte na tomto odkazu (platí 1 hodinu):"
+    }
+  }
 }

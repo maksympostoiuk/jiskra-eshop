@@ -12,5 +12,20 @@
     "subject": "Order no. {number}: {status}",
     "intro": "the status of your order no. {number} has changed to: {status}."
   },
-  "bankTransfer": "Bank transfer: account {account}, IBAN {iban}, payment reference {vs}, amount {amount}."
+  "bankTransfer": "Bank transfer: account {account}, IBAN {iban}, payment reference {vs}, amount {amount}.",
+  "account": {
+    "ignore": "If you didn't request this, you can ignore this e-mail.",
+    "verify": {
+      "subject": "Finish your Jiskra registration",
+      "body": "Hello {name},\nplease finish your registration by opening this link (valid for 48 hours):"
+    },
+    "exists": {
+      "subject": "Your Jiskra account",
+      "body": "Someone tried to register with this address, but you already have an account. If you forgot your password, reset it here:"
+    },
+    "reset": {
+      "subject": "Reset your Jiskra password",
+      "body": "Set a new password using this link (valid for 1 hour):"
+    }
+  }
 }

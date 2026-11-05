@@ -97,11 +97,20 @@ export async function createOrder(db: PrismaClient, input: CreateOrderInput) {
     }
 
     const { contact } = input;
-    const customer = await tx.customer.upsert({
-      where: { email: contact.email },
-      create: { email: contact.email, firstName: contact.firstName, lastName: contact.lastName, phone: contact.phone },
-      update: { firstName: contact.firstName, lastName: contact.lastName, phone: contact.phone },
-    });
+    // Signed-in customers keep their account; guests are matched by e-mail. A guest checkout never
+    // overwrites the profile of a registered account (anyone can type someone else's e-mail).
+    let customerId = input.customerId ?? null;
+    if (!customerId) {
+      const existing = await tx.customer.findUnique({ where: { email: contact.email } });
+      if (!existing) {
+        customerId = (await tx.customer.create({ data: { email: contact.email, firstName: contact.firstName, lastName: contact.lastName, phone: contact.phone } })).id;
+      } else {
+        if (!existing.passwordHash) {
+          await tx.customer.update({ where: { id: existing.id }, data: { firstName: contact.firstName, lastName: contact.lastName, phone: contact.phone } });
+        }
+        customerId = existing.id;
+      }
+    }
 
     const number = await nextOrderNumber(tx);
     const order = await tx.order.create({
@@ -109,7 +118,7 @@ export async function createOrder(db: PrismaClient, input: CreateOrderInput) {
         number,
         searchText: orderSearchText({ number, ...contact }),
         accessToken: randomToken(24),
-        customerId: customer.id,
+        customerId,
         status: "NEW",
         locale: input.locale,
         currency: input.currency,

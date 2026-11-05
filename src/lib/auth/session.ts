@@ -1,18 +1,14 @@
 import "server-only";
-import { createHash } from "node:crypto";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import type { AdminRole } from "@/lib/domain";
 import { randomToken } from "@/lib/random";
+import { hashToken } from "./tokens";
 
 export const ADMIN_SESSION_COOKIE = "admin_session";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-function hashToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
-}
 
 export type AdminIdentity = { id: string; email: string; name: string; role: AdminRole };
 

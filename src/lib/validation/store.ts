@@ -39,3 +39,20 @@ export const checkoutSchema = checkoutContactSchema.extend({
     .max(50),
 });
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
+
+const password = z.string().min(10, { error: "v.passwordLength" }).max(200);
+
+export const registerSchema = z.object({
+  firstName: required(60),
+  lastName: required(60),
+  email,
+  password,
+});
+export const customerLoginSchema = z.object({ email, password: z.string().min(1, { error: "v.required" }).max(200) });
+export const forgotPasswordSchema = z.object({ email });
+export const resetPasswordSchema = z.object({ token: z.string().min(1).max(200), password });
+export const profileSchema = z.object({
+  firstName: required(60),
+  lastName: required(60),
+  phone: z.union([z.literal(""), z.string().trim().max(30).regex(/^\+?[\d\s()-]{6,}$/, { error: "v.phone" })]),
+});

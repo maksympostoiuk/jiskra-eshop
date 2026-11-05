@@ -22,6 +22,7 @@ export const STOREFRONT_CLIENT_NAMESPACES: Namespace[] = [
   "product",
   "cart",
   "checkout",
+  "account",
   "validation",
 ];
 export const ADMIN_CLIENT_NAMESPACES: Namespace[] = ["common", "admin", "validation"];

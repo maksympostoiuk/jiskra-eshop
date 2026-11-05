@@ -21,7 +21,7 @@ export type ShippingOption = { id: string; name: string; description: string; al
 const PAYMENT_ICONS = { bank_transfer: Landmark, cod: Banknote, stripe: CreditCard } as const;
 const DRAFT_KEY = "jiskra:checkout-draft";
 
-export function CheckoutForm({ currency: pageCurrency, shippingOptions, paymentMethods }: { currency: string; shippingOptions: ShippingOption[]; paymentMethods: Array<"bank_transfer" | "cod" | "stripe"> }) {
+export function CheckoutForm({ currency: pageCurrency, prefill, shippingOptions, paymentMethods }: { currency: string; prefill: { email: string; firstName: string; lastName: string; phone: string } | null; shippingOptions: ShippingOption[]; paymentMethods: Array<"bank_transfer" | "cod" | "stripe"> }) {
   const t = useTranslations("checkout");
   const tPay = useTranslations("common.paymentMethod");
   const tv = useTranslations("validation");
@@ -39,10 +39,14 @@ export function CheckoutForm({ currency: pageCurrency, shippingOptions, paymentM
   useEffect(() => {
     try {
       const draft = JSON.parse(window.localStorage.getItem(DRAFT_KEY) ?? "null");
-      if (draft && typeof draft === "object") setContact((c) => ({ ...c, ...draft }));
+      // Account details win over the browser draft for the identity fields.
+      const fromAccount = prefill ? Object.fromEntries(Object.entries(prefill).filter(([, v]) => v)) : {};
+      setContact((c) => ({ ...c, ...(draft && typeof draft === "object" ? draft : {}), ...fromAccount }));
     } catch {
       /* ignore */
     }
+    // Run once on mount; `prefill` comes from the server render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
     try {

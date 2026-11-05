@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { Heart, Scale, ShoppingBag } from "lucide-react";
+import { Heart, Scale, ShoppingBag, User } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { cartCount } from "@/lib/cart";
@@ -22,7 +22,7 @@ function Counter({ value }: { value: number }) {
 }
 
 /** Compare / favorites / cart icons with live counters (from localStorage). */
-export function HeaderActions() {
+export function HeaderActions({ signedIn }: { signedIn: boolean }) {
   const t = useTranslations("common.header");
   const compare = useStoreValue(compareStore).length;
   const favorites = useStoreValue(favoritesStore).length;
@@ -31,6 +31,7 @@ export function HeaderActions() {
     { href: "/compare", label: t("compare"), count: compare, Icon: Scale, aria: t("compareCount", { count: compare }) },
     { href: "/favorites", label: t("favorites"), count: favorites, Icon: Heart, aria: t("favoritesCount", { count: favorites }) },
     { href: "/cart", label: t("cart"), count: cart, Icon: ShoppingBag, aria: t("cartCount", { count: cart }) },
+    { href: signedIn ? "/account" : "/account/login", label: signedIn ? t("account") : t("signIn"), count: 0, Icon: User, aria: signedIn ? t("account") : t("signIn") },
   ];
   return (
     <nav aria-label={t("actions")} className="flex items-center gap-0.5 sm:gap-1">

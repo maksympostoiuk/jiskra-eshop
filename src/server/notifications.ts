@@ -55,3 +55,23 @@ export async function sendOrderStatusEmail(orderId: string) {
   ].join("\n");
   await getMailer().send({ to: order.email, subject: t("status.subject", { number: order.number, status }), text });
 }
+
+async function accountEmail(to: string, locale: string, key: "verify" | "exists" | "reset", values: Record<string, string>) {
+  const loc = isLocale(locale) ? locale : DEFAULT_LOCALE;
+  const t = await getTranslations({ locale: loc, namespace: "email.account" });
+  const tc = await getTranslations({ locale: loc, namespace: "email" });
+  const text = [t(`${key}.body`, values), "", values.url ?? "", "", t("ignore"), "", tc("signature")].join("\n");
+  await getMailer().send({ to, subject: t(`${key}.subject`), text });
+}
+
+export async function sendVerificationEmail(to: string, name: string, locale: string, token: string) {
+  await accountEmail(to, locale, "verify", { name, url: `${siteUrl()}/api/account/verify?locale=${locale}&token=${encodeURIComponent(token)}` });
+}
+
+export async function sendAccountExistsEmail(to: string, locale: string) {
+  await accountEmail(to, locale, "exists", { url: `${siteUrl()}/${locale}/account/forgot` });
+}
+
+export async function sendPasswordResetEmail(to: string, locale: string, token: string) {
+  await accountEmail(to, locale, "reset", { url: `${siteUrl()}/${locale}/account/reset?token=${encodeURIComponent(token)}` });
+}

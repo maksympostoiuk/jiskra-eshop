@@ -62,6 +62,16 @@ describe("createOrder (integration)", () => {
     expect(await db.order.count()).toBe(2);
   });
 
+  it("guest checkout with an account's e-mail links the order but keeps the account profile", async () => {
+    await db.productVariant.update({ where: { id: variantId }, data: { stock: 1 } });
+    const account = await db.customer.create({ data: { email: "owner@example.com", firstName: "Owner", lastName: "Real", passwordHash: "x", emailVerifiedAt: new Date() } });
+    const order = await createOrder(db, { lines: [{ variantId, qty: 1 }], currency: "CZK", locale: "cs", contact: { ...contact, email: "owner@example.com", firstName: "Mallory" }, shippingMethodId: shippingId, paymentMethod: "cod" });
+    expect(order.customerId).toBe(account.id);
+    expect((await db.customer.findUniqueOrThrow({ where: { id: account.id } })).firstName).toBe("Owner");
+    expect(order.firstName).toBe("Mallory");
+    expect(order.searchText).toContain("mallory");
+  });
+
   it("rejects unknown shipping methods and unknown variants", async () => {
     await expect(createOrder(db, { lines: [{ variantId, qty: 1 }], currency: "CZK", locale: "cs", contact, shippingMethodId: "nope", paymentMethod: "cod" })).rejects.toBeInstanceOf(OrderError);
     await expect(createOrder(db, { lines: [{ variantId: "missing", qty: 1 }], currency: "CZK", locale: "cs", contact, shippingMethodId: shippingId, paymentMethod: "cod" })).rejects.toMatchObject({ code: "UNAVAILABLE" });

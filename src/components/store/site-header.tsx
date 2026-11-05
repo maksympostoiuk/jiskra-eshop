@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { getCategoryTree, type CategoryNode } from "@/server/catalog";
 import { getCurrency } from "@/server/currency";
 import { getSettings } from "@/server/settings";
+import { getCustomer } from "@/lib/auth/customer-session";
 import { CatalogMenu, type MenuCategory } from "./catalog-menu";
 import { HeaderActions, LocaleCurrencySwitcher } from "./header-controls";
 import { SearchBox } from "./search-box";
@@ -17,11 +18,12 @@ const toMenu = (c: CategoryNode): MenuCategory => ({ id: c.id, name: c.name, slu
 export async function SiteHeader() {
   const locale = await getLocale();
   const t = await getTranslations("common.header");
-  const [{ roots }, currency, settings, freeFrom] = await Promise.all([
+  const [{ roots }, currency, settings, freeFrom, customer] = await Promise.all([
     getCategoryTree(locale),
     getCurrency(),
     getSettings(),
     prisma.shippingMethod.findFirst({ where: { isActive: true, freeFromCzk: { not: null } }, orderBy: { freeFromCzk: "asc" } }),
+    getCustomer(),
   ]);
   const threshold = freeFrom ? (currency === "CZK" ? freeFrom.freeFromCzk : freeFrom.freeFromUsd) : null;
 
@@ -56,7 +58,7 @@ export async function SiteHeader() {
             <CatalogMenu categories={roots.filter((c) => c.productCount > 0).map(toMenu)} />
             <SearchBox className="min-w-0 flex-1" />
           </div>
-          <HeaderActions />
+          <HeaderActions signedIn={Boolean(customer)} />
         </div>
       </div>
       <div className="border-t border-line/60 md:hidden">

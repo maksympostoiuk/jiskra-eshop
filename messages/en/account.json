@@ -1,1 +1,65 @@
-{}
+{
+  "title": "My account",
+  "greeting": "Hello, {name}",
+  "logout": "Sign out",
+  "verified": "Your e-mail is verified and you are signed in. Welcome!",
+  "working": "Working…",
+  "fields": {
+    "email": "E-mail",
+    "password": "Password",
+    "newPassword": "New password",
+    "passwordHint": "At least 10 characters.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone"
+  },
+  "errors": {
+    "tooMany": "Too many attempts. Please try again later.",
+    "signedOut": "You have been signed out. Please sign in again."
+  },
+  "login": {
+    "title": "Sign in",
+    "intro": "See your orders and get a pre-filled checkout.",
+    "submit": "Sign in",
+    "invalid": "Incorrect e-mail or password.",
+    "unverified": "Please confirm your e-mail first – we sent you a link when you registered.",
+    "verifyInvalid": "The verification link is invalid or has expired. Please register again.",
+    "forgot": "Forgot your password?",
+    "noAccount": "No account yet?",
+    "register": "Register"
+  },
+  "register": {
+    "title": "Create an account",
+    "intro": "An account is optional – you can also check out as a guest.",
+    "submit": "Create account",
+    "checkEmail": "Done! We sent a link to {email} to finish your registration.",
+    "haveAccount": "Already have an account?",
+    "login": "Sign in"
+  },
+  "forgot": {
+    "title": "Forgotten password",
+    "intro": "We'll send you a link to set a new password.",
+    "submit": "Send link",
+    "sent": "If an account exists for that address, we have sent it a password reset link.",
+    "back": "Back to sign in"
+  },
+  "reset": {
+    "title": "New password",
+    "submit": "Save password",
+    "done": "Your password has been changed and you are signed in.",
+    "invalid": "The link is invalid or has expired.",
+    "again": "Request a new link",
+    "toAccount": "Go to my account"
+  },
+  "profile": {
+    "title": "Personal details",
+    "save": "Save",
+    "saved": "Your details have been saved."
+  },
+  "orders": {
+    "title": "My orders",
+    "empty": "You haven't ordered anything yet.",
+    "shop": "Start shopping",
+    "items": "{count, plural, one {# item} other {# items}}"
+  }
+}

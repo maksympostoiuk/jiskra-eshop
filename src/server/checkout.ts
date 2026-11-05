@@ -11,6 +11,7 @@ import { getPaymentProvider } from "@/lib/payments";
 import { siteUrl } from "@/lib/site";
 import { checkoutSchema, type CheckoutInput } from "@/lib/validation/store";
 import { getCurrency } from "@/server/currency";
+import { getCustomer } from "@/lib/auth/customer-session";
 import { sendOrderConfirmationEmail } from "@/server/notifications";
 import { getSettings } from "@/server/settings";
 import { validateInput, type ActionResult } from "./action";
@@ -94,6 +95,7 @@ export async function placeOrder(input: CheckoutInput): Promise<ActionResult<{ r
       shippingMethodId: shipping.id,
       paymentMethod: provider.id,
       expectedTotal: data.expectedTotal,
+      customerId: (await getCustomer())?.id ?? null,
     });
   } catch (error) {
     if (error instanceof OrderError) {
