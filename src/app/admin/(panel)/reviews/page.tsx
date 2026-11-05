@@ -14,6 +14,7 @@ import { Input, Select } from "@/components/ui/form";
 import { prisma } from "@/lib/db";
 import { REVIEW_STATUSES, isOneOf } from "@/lib/domain";
 import { pickTranslation } from "@/lib/i18n-content";
+import { normalizeText } from "@/lib/text";
 import { deleteReview, moderateReview } from "@/server/admin/orders";
 
 const PER_PAGE = 15;
@@ -26,7 +27,7 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
   const format = await getFormatter();
   const page = parsePage(params.page);
   const status = params.status === "ALL" ? undefined : isOneOf(REVIEW_STATUSES, params.status) ? params.status : "PENDING";
-  const where: Prisma.ReviewWhereInput = { ...(status ? { status } : {}), ...(params.q ? { OR: [{ text: { contains: params.q } }, { authorName: { contains: params.q } }] } : {}) };
+  const where: Prisma.ReviewWhereInput = { ...(status ? { status } : {}), ...(params.q?.trim() ? { AND: normalizeText(params.q).split(" ").map((term) => ({ searchText: { contains: term } })) } : {}) };
   const [total, reviews] = await Promise.all([
     prisma.review.count({ where }),
     prisma.review.findMany({ where, orderBy: { createdAt: "desc" }, skip: (page - 1) * PER_PAGE, take: PER_PAGE, include: { product: { include: { translations: true } } } }),

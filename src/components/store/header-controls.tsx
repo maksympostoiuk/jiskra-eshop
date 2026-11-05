@@ -55,8 +55,8 @@ export function LocaleCurrencySwitcher({ currency, className }: { currency: stri
   const searchParams = useSearchParams();
   const router = useRouter();
   const [pending, start] = useTransition();
-  // Spec facet values are localized, so they are dropped when switching language.
-  const query = Object.fromEntries([...searchParams.entries()].filter(([k]) => !k.startsWith("f_")));
+  // Filters (including spec facets, which use locale-independent keys) survive a language switch.
+  const query = Object.fromEntries(searchParams.entries());
   return (
     <div className={cn("flex items-center gap-3 text-xs font-semibold", className)}>
       <div role="group" aria-label={t("language")} className="flex items-center rounded-full border border-line bg-surface p-0.5">

@@ -5,7 +5,7 @@
  *   sort=popular|price_asc|price_desc|newest|rating   view=grid|list   page=N
  *   pmin / pmax   price range in major units of the current currency
  *   brand=slug1,slug2   stock=1   rating=4
- *   f_<specKey>=v1,v2   spec facets (NUMBER: numbers, TEXT: localized texts, BOOLEAN: "1")
+ *   f_<specKey>=v1,v2   spec facets (NUMBER: numbers, TEXT: locale-independent text keys, BOOLEAN: "1")
  */
 
 export const SORTS = ["popular", "price_asc", "price_desc", "newest", "rating"] as const;
@@ -63,6 +63,7 @@ export function parseFilters(params: QueryInput, specDefs: SpecFilterDef[] = [])
     let values = list(get(params, `f_${def.key}`));
     if (def.type === "NUMBER") values = values.filter((v) => /^-?\d+(\.\d+)?$/.test(v));
     if (def.type === "BOOLEAN") values = values.includes("1") ? ["1"] : [];
+    if (def.type === "TEXT") values = values.filter((v) => /^[a-z0-9-]+$/.test(v));
     if (values.length) specs[def.key] = values;
   }
 

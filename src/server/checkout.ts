@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { rateLimit } from "@/lib/auth/rate-limit";
@@ -15,6 +14,7 @@ import { getCurrency } from "@/server/currency";
 import { sendOrderConfirmationEmail } from "@/server/notifications";
 import { getSettings } from "@/server/settings";
 import { validateInput, type ActionResult } from "./action";
+import { clientIp } from "./request";
 
 export type QuotedLine = {
   variantId: string;
@@ -75,8 +75,7 @@ export async function placeOrder(input: CheckoutInput): Promise<ActionResult<{ r
   if (!parsed.success) return { ok: false, errors: parsed.errors, message: t("errors.form") };
   const data = parsed.data;
 
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-  if (!rateLimit(`checkout:${ip}`, 10, 10 * 60 * 1000).ok) return { ok: false, message: t("errors.tooMany") };
+  if (!(await rateLimit(`checkout:${await clientIp()}`, 10, 10 * 60 * 1000)).ok) return { ok: false, message: t("errors.tooMany") };
 
   const locale = await getLocale();
   const currency = await getCurrency();

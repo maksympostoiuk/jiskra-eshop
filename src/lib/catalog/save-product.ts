@@ -1,6 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 import { refreshProductAggregates } from "@/lib/catalog/aggregates";
 import { LOCALES } from "@/i18n/routing";
+import { specTextKey } from "@/lib/catalog/spec-format";
 import type { ProductInput } from "@/lib/validation/admin";
 
 /**
@@ -114,6 +115,7 @@ export async function persistProduct(
           boolValue: s.boolValue,
           textCs: s.textCs || s.textEn || null,
           textEn: s.textEn || s.textCs || null,
+          textKey: specTextKey(s.textCs, s.textEn),
         })),
       });
     }

@@ -1,15 +1,17 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { rateLimit } from "@/lib/auth/rate-limit";
+import { reviewSearchText } from "@/lib/text";
 import { CURRENCY_COOKIE, isCurrency } from "@/lib/money";
 import { reviewSchema, type ReviewInput } from "@/lib/validation/store";
 import { formatSpecValue } from "@/lib/catalog/spec-format";
 import { getCardsByIds, getCategoryTree, getSpecDefsForCategory, type ProductCardData, type SpecDef } from "@/server/catalog";
 import { getCurrency } from "@/server/currency";
 import { validateInput, type ActionResult } from "./action";
+import { clientIp } from "./request";
 
 export async function setCurrency(currency: string): Promise<void> {
   if (!isCurrency(currency)) return;
@@ -21,8 +23,10 @@ export async function submitReview(input: ReviewInput): Promise<ActionResult> {
   const t = await getTranslations("product.reviews");
   const parsed = await validateInput(reviewSchema, input);
   if (!parsed.success) return { ok: false, errors: parsed.errors };
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-  if (!rateLimit(`review:${ip}`, 5, 60 * 60 * 1000).ok) return { ok: false, message: t("tooMany") };
+  const ip = await clientIp();
+  if (!(await rateLimit(`review:${ip}`, 5, 60 * 60 * 1000)).ok || !(await rateLimit(`review-product:${parsed.data.productId}`, 30, 60 * 60 * 1000)).ok) {
+    return { ok: false, message: t("tooMany") };
+  }
   const product = await prisma.product.findFirst({ where: { id: parsed.data.productId, status: "PUBLISHED" }, select: { id: true } });
   if (!product) return { ok: false, message: t("error") };
   await prisma.review.create({
@@ -34,6 +38,7 @@ export async function submitReview(input: ReviewInput): Promise<ActionResult> {
       text: parsed.data.text,
       locale: await getLocale(),
       status: "PENDING",
+      searchText: reviewSearchText({ authorName: parsed.data.authorName, authorEmail: parsed.data.authorEmail, text: parsed.data.text }),
     },
   });
   return { ok: true, message: t("thanks") };

@@ -4,6 +4,7 @@ import type { CartLine } from "@/lib/cart";
 import { pickLocalized, pickTranslation } from "@/lib/i18n-content";
 import type { Currency } from "@/lib/money";
 import { randomToken } from "@/lib/random";
+import { orderSearchText } from "@/lib/text";
 import { planOrder, type OrderPlan, type VariantForOrder } from "./plan";
 
 export type OrderContact = {
@@ -102,9 +103,11 @@ export async function createOrder(db: PrismaClient, input: CreateOrderInput) {
       update: { firstName: contact.firstName, lastName: contact.lastName, phone: contact.phone },
     });
 
+    const number = await nextOrderNumber(tx);
     const order = await tx.order.create({
       data: {
-        number: await nextOrderNumber(tx),
+        number,
+        searchText: orderSearchText({ number, ...contact }),
         accessToken: randomToken(24),
         customerId: customer.id,
         status: "NEW",

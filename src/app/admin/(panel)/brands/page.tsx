@@ -10,6 +10,7 @@ import { EmptyRow, FilterBar, Table, Td, Th, Tr } from "@/components/admin/table
 import { buttonClasses } from "@/components/ui/button";
 import { Input } from "@/components/ui/form";
 import { prisma } from "@/lib/db";
+import { slugify } from "@/lib/text";
 import { deleteBrand } from "@/server/admin/merch";
 
 const PER_PAGE = 20;
@@ -19,9 +20,9 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
   const t = await getTranslations("admin.brands");
   const tc = await getTranslations("admin.common");
   const page = parsePage(params.page);
-  // Brand names are short ASCII-ish strings; match both the name and the slug for case-insensitivity on PostgreSQL.
+  // The slug is the normalized name, so matching the slugified query is case- and accent-insensitive everywhere.
   const q = params.q?.trim();
-  const where: Prisma.BrandWhereInput = q ? { OR: [{ name: { contains: q } }, { slug: { contains: q.toLowerCase() } }] } : {};
+  const where: Prisma.BrandWhereInput = q ? { OR: [{ slug: { contains: slugify(q) } }, { name: { contains: q } }] } : {};
   const [total, brands] = await Promise.all([
     prisma.brand.count({ where }),
     prisma.brand.findMany({ where, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], skip: (page - 1) * PER_PAGE, take: PER_PAGE, include: { _count: { select: { products: true } } } }),

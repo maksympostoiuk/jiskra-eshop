@@ -24,7 +24,7 @@ describe("parseFilters", () => {
 
   it("parses all supported parameters", () => {
     const f = parseFilters(
-      { sort: "price_asc", view: "list", page: "3", pmin: "1000", pmax: "25000", brand: "nordvik,kestrel", stock: "1", rating: "4", f_ram: "8,12", f_os: "Android 16", f_nfc: "1" },
+      { sort: "price_asc", view: "list", page: "3", pmin: "1000", pmax: "25000", brand: "nordvik,kestrel", stock: "1", rating: "4", f_ram: "8,12", f_os: "android-16", f_nfc: "1" },
       specs,
     );
     expect(f).toMatchObject({
@@ -36,7 +36,7 @@ describe("parseFilters", () => {
       brands: ["nordvik", "kestrel"],
       inStock: true,
       minRating: 4,
-      specs: { ram: ["8", "12"], os: ["Android 16"], nfc: ["1"] },
+      specs: { ram: ["8", "12"], os: ["android-16"], nfc: ["1"] },
     });
   });
 
@@ -63,7 +63,7 @@ describe("parseFilters", () => {
 
 describe("serializeFilters", () => {
   it("round-trips and omits defaults", () => {
-    const query = "brand=kestrel,nordvik&f_os=Android 16&f_ram=12,8&page=2&pmin=1000&sort=newest&stock=1";
+    const query = "brand=kestrel,nordvik&f_os=android-16&f_ram=12,8&page=2&pmin=1000&sort=newest&stock=1";
     const parsed = parseFilters(new URLSearchParams(query), specs);
     const serialized = serializeFilters(parsed);
     expect(parseFilters(new URLSearchParams(serialized), specs)).toEqual(parsed);

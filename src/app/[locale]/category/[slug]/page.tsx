@@ -37,7 +37,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const { category, redirectSlug } = await findCategoryBySlug(locale, slug);
-  if (redirectSlug) redirect({ href: `/category/${redirectSlug}`, locale });
+  if (redirectSlug) {
+    // Keep filters, sorting and paging when the slug came from the other language.
+    const query = Object.fromEntries(Object.entries(await searchParams).flatMap(([k, v]) => (typeof v === "string" ? [[k, v]] : [])));
+    redirect({ href: { pathname: `/category/${redirectSlug}`, query }, locale });
+  }
   if (!category) notFound();
   const t = await getTranslations("catalog");
   const [path, specDefs, scope, sp] = await Promise.all([getCategoryPath(locale, category.id), getSpecDefsForCategory(locale, category.id), categoryScope(locale, category.id), searchParams]);

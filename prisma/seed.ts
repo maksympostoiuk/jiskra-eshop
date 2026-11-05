@@ -4,8 +4,9 @@ import { refreshProductAggregates } from "../src/lib/catalog/aggregates";
 import { hashPassword } from "../src/lib/auth/password";
 import { convertCzkToUsd } from "../src/lib/money";
 import { placeholderUrl } from "../src/lib/placeholder";
+import { specTextKey } from "../src/lib/catalog/spec-format";
 import { createRng, randomToken } from "../src/lib/random";
-import { slugify } from "../src/lib/text";
+import { orderSearchText, reviewSearchText, slugify } from "../src/lib/text";
 import {
   BADGES,
   BRANDS,
@@ -206,6 +207,7 @@ async function seedProducts(
           boolValue: spec.type === "BOOLEAN" ? Boolean(value) : null,
           textCs: spec.type === "TEXT" ? (Array.isArray(value) ? value[0] : String(value)) : null,
           textEn: spec.type === "TEXT" ? (Array.isArray(value) ? value[1] : String(value)) : null,
+          textKey: spec.type === "TEXT" ? specTextKey(Array.isArray(value) ? value[0] : String(value), null) : null,
         },
       });
     }
@@ -216,10 +218,12 @@ async function seedProducts(
       const r = rng.pick(REVIEW_POOL);
       const locale = rng.chance(0.7) ? "cs" : "en";
       const status = rng.chance(0.85) ? "APPROVED" : "PENDING";
+      const authorName = rng.pick(REVIEW_AUTHORS);
       await prisma.review.create({
         data: {
           productId: product.id,
-          authorName: rng.pick(REVIEW_AUTHORS),
+          authorName,
+          searchText: reviewSearchText({ authorName, text: locale === "cs" ? r.cs : r.en }),
           rating: r.rating,
           text: locale === "cs" ? r.cs : r.en,
           locale,
@@ -347,14 +351,17 @@ async function seedOrders() {
       create: { key: "order", value: 1 },
       update: { value: { increment: 1 } },
     });
+    const number = `${createdAt.getFullYear()}${String(counter.value).padStart(5, "0")}`;
+    const email = `${slugify(person[0])}.${slugify(person[1])}@example.com`;
     await prisma.order.create({
       data: {
-        number: `${createdAt.getFullYear()}${String(counter.value).padStart(5, "0")}`,
+        number,
+        searchText: orderSearchText({ number, email, firstName: person[0], lastName: person[1], phone: "+420 777 123 456" }),
         accessToken: randomToken(),
         status,
         locale,
         currency,
-        email: `${slugify(person[0])}.${slugify(person[1])}@example.com`,
+        email,
         phone: "+420 777 123 456",
         firstName: person[0],
         lastName: person[1],

@@ -73,6 +73,15 @@ test.describe("storefront purchase flow", () => {
     await expect(page.locator("#buy").getByText(/\$\d/).first()).toBeVisible();
   });
 
+  test("filters survive a language switch", async ({ page }) => {
+    await page.goto("/cs/category/sluchatka?f_form=pres-usi&brand=halvo");
+    await expect(page.getByRole("complementary").getByLabel("Přes uši")).toBeChecked();
+    await page.getByRole("group", { name: "Jazyk" }).getByRole("link", { name: "en" }).click();
+    await expect(page).toHaveURL(/\/en\/category\/headphones\?.*f_form=pres-usi/);
+    await expect(page.getByRole("complementary").getByLabel("Over-ear")).toBeChecked();
+    await expect(page.getByRole("link", { name: "Halvo Studio ANC" }).first()).toBeVisible();
+  });
+
   test("search suggestions lead to products", async ({ page }) => {
     await page.goto("/en");
     await page.getByRole("combobox").fill("halvo");

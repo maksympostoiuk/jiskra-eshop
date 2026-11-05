@@ -1,4 +1,5 @@
 import { intlLocale } from "@/lib/money";
+import { slugify } from "@/lib/text";
 
 export type SpecValueLike = { numberValue: number | null; boolValue: boolean | null; textCs: string | null; textEn: string | null };
 
@@ -21,4 +22,10 @@ export function formatSpecValue(
   if (def.type === "BOOLEAN") return value.boolValue === null ? null : value.boolValue ? yesNo.yes : yesNo.no;
   const text = locale === "en" ? (value.textEn ?? value.textCs) : (value.textCs ?? value.textEn);
   return text || null;
+}
+
+/** Stable, locale-independent key of a TEXT spec value ("Přes uši" → "pres-usi"); null when there is no text. */
+export function specTextKey(textCs: string | null | undefined, textEn: string | null | undefined): string | null {
+  const key = slugify(textCs || textEn || "");
+  return key || null;
 }

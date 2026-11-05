@@ -30,8 +30,8 @@ export async function ProductListing({
   const yesNo = { yes: tc("yes"), no: tc("no") };
   const currency = await getCurrency();
   const filters = parseFilters(searchParams, specDefs);
-  const where = buildListingWhere(scope, filters, specDefs, currency, locale);
-  const [facets, result] = await Promise.all([getFacets(scope, specDefs, currency, locale, yesNo), listProducts(where, filters, { locale, currency, yesNo })]);
+  const where = buildListingWhere(scope, filters, specDefs, currency);
+  const [facets, result] = await Promise.all([getFacets(scope, specDefs, filters, currency, locale, yesNo), listProducts(where, filters, { locale, currency, yesNo })]);
 
   const pageHref = (page: number) => {
     const q = new URLSearchParams(serializeFilters({ ...filters, page }));

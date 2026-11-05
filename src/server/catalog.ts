@@ -226,7 +226,6 @@ export function buildListingWhere(
   filters: CatalogFilters,
   specDefs: SpecDef[],
   currency: Currency,
-  locale: string,
 ): Prisma.ProductWhereInput {
   const and: Prisma.ProductWhereInput[] = [scope, { status: "PUBLISHED" }];
   const priceField = currency === "CZK" ? "minPriceCzk" : "minPriceUsd";
@@ -243,9 +242,7 @@ export function buildListingWhere(
         ? { numberValue: { in: values.map(Number) } }
         : def.type === "BOOLEAN"
           ? { boolValue: true }
-          : locale === "en"
-            ? { textEn: { in: values } }
-            : { textCs: { in: values } };
+          : { textKey: { in: values } };
     and.push({ specValues: { some: { specDefinitionId: def.id, ...valueWhere } } });
   }
   return { AND: and };
@@ -259,55 +256,74 @@ export type Facets = {
 };
 
 /**
- * Facet values with counts over the unfiltered scope (so options never disappear while filtering).
+ * Facets with "disjunctive" counts: every group is counted with all *other* active filters applied, so
+ * counts tell how many products a click would show. The option lists come from the unfiltered scope, so
+ * options (and the user's current selections) never disappear; unavailable ones get a count of 0.
  */
-export async function getFacets(scope: Prisma.ProductWhereInput, specDefs: SpecDef[], currency: Currency, locale: string, yesNo: { yes: string; no: string }): Promise<Facets> {
+export async function getFacets(
+  scope: Prisma.ProductWhereInput,
+  specDefs: SpecDef[],
+  filters: CatalogFilters,
+  currency: Currency,
+  locale: string,
+  yesNo: { yes: string; no: string },
+): Promise<Facets> {
   const base: Prisma.ProductWhereInput = { AND: [scope, { status: "PUBLISHED" }] };
+  const without = (patch: Partial<CatalogFilters>) => buildListingWhere(scope, { ...filters, ...patch }, specDefs, currency);
   const filterable = specDefs.filter((d) => d.isFilterable);
-  const [brandGroups, priceAgg, inStockCount, specGroups] = await Promise.all([
-    prisma.product.groupBy({ by: ["brandId"], where: base, _count: { _all: true } }),
-    prisma.product.aggregate({ where: base, _min: { minPriceCzk: true, minPriceUsd: true }, _max: { minPriceCzk: true, minPriceUsd: true } }),
-    prisma.product.count({ where: { AND: [base, { inStock: true }] } }),
-    filterable.length
+  const specWhere = (key: string) => {
+    const specs = { ...filters.specs };
+    delete specs[key];
+    return without({ specs });
+  };
+  const groupSpecs = (defIds: string[], product: Prisma.ProductWhereInput) =>
+    defIds.length
       ? prisma.productSpecValue.groupBy({
-          by: ["specDefinitionId", "numberValue", "boolValue", "textCs", "textEn"],
-          where: { specDefinitionId: { in: filterable.map((d) => d.id) }, product: base },
+          by: ["specDefinitionId", "numberValue", "boolValue", "textKey", "textCs", "textEn"],
+          where: { specDefinitionId: { in: defIds }, product },
           _count: { _all: true },
         })
-      : Promise.resolve([]),
+      : Promise.resolve([]);
+
+  const [allBrands, brandCounts, priceAgg, inStockCount, allSpecValues, ...specCounts] = await Promise.all([
+    prisma.product.groupBy({ by: ["brandId"], where: base }),
+    prisma.product.groupBy({ by: ["brandId"], where: without({ brands: [] }), _count: { _all: true } }),
+    prisma.product.aggregate({ where: base, _min: { minPriceCzk: true, minPriceUsd: true }, _max: { minPriceCzk: true, minPriceUsd: true } }),
+    prisma.product.count({ where: { AND: [without({ inStock: false }), { inStock: true }] } }),
+    groupSpecs(filterable.map((d) => d.id), base),
+    ...filterable.map((d) => groupSpecs([d.id], specWhere(d.key))),
   ]);
-  const brandRows = await prisma.brand.findMany({ where: { id: { in: brandGroups.map((b) => b.brandId).filter((x): x is string => !!x) } } });
-  const brands = brandGroups
-    .map((g) => {
-      const b = brandRows.find((x) => x.id === g.brandId);
-      return b ? { slug: b.slug, name: b.name, count: g._count._all } : null;
-    })
-    .filter((x): x is { slug: string; name: string; count: number } => x !== null)
+
+  const brandRows = await prisma.brand.findMany({ where: { id: { in: allBrands.map((b) => b.brandId).filter((x): x is string => !!x) } } });
+  const brands = brandRows
+    .map((b) => ({ slug: b.slug, name: b.name, count: brandCounts.find((g) => g.brandId === b.id)?._count._all ?? 0 }))
     .sort((a, b) => a.name.localeCompare(b.name));
   const min = currency === "CZK" ? priceAgg._min.minPriceCzk : priceAgg._min.minPriceUsd;
   const max = currency === "CZK" ? priceAgg._max.minPriceCzk : priceAgg._max.minPriceUsd;
 
+  type Group = (typeof allSpecValues)[number];
+  const valueOf = (def: SpecDef, g: Group): { value: string; sort: number | string } | null => {
+    if (def.type === "NUMBER") return g.numberValue === null ? null : { value: String(g.numberValue), sort: g.numberValue };
+    if (def.type === "BOOLEAN") return g.boolValue === true ? { value: "1", sort: 0 } : null;
+    return g.textKey ? { value: g.textKey, sort: (locale === "en" ? g.textEn : g.textCs) ?? g.textKey } : null;
+  };
+
   const specs = filterable
-    .map((def) => {
-      const merged = new Map<string, { value: string; label: string; count: number; sort: number | string }>();
-      for (const g of specGroups.filter((x) => x.specDefinitionId === def.id)) {
-        let value: string | null = null;
-        let sort: number | string = 0;
-        if (def.type === "NUMBER" && g.numberValue !== null) {
-          value = String(g.numberValue);
-          sort = g.numberValue;
-        } else if (def.type === "BOOLEAN" && g.boolValue === true) value = "1";
-        else if (def.type === "TEXT") {
-          value = (locale === "en" ? g.textEn : g.textCs) ?? null;
-          sort = value ?? "";
-        }
-        if (value === null) continue;
-        const label = def.type === "BOOLEAN" ? yesNo.yes : (formatSpecValue(g, def, locale, yesNo) ?? value);
-        const prev = merged.get(value);
-        merged.set(value, { value, label, sort, count: (prev?.count ?? 0) + g._count._all });
+    .map((def, i) => {
+      const counts = new Map<string, number>();
+      for (const g of specCounts[i]) {
+        const v = valueOf(def, g);
+        if (v) counts.set(v.value, (counts.get(v.value) ?? 0) + g._count._all);
       }
-      const values = [...merged.values()]
-        .sort((a, b) => (typeof a.sort === "number" && typeof b.sort === "number" ? a.sort - b.sort : String(a.sort).localeCompare(String(b.sort))))
+      const options = new Map<string, { value: string; label: string; count: number; sort: number | string }>();
+      for (const g of allSpecValues.filter((x) => x.specDefinitionId === def.id)) {
+        const v = valueOf(def, g);
+        if (!v || options.has(v.value)) continue;
+        const label = def.type === "BOOLEAN" ? yesNo.yes : (formatSpecValue(g, def, locale, yesNo) ?? v.value);
+        options.set(v.value, { value: v.value, label, sort: v.sort, count: counts.get(v.value) ?? 0 });
+      }
+      const values = [...options.values()]
+        .sort((a, b) => (typeof a.sort === "number" && typeof b.sort === "number" ? a.sort - b.sort : String(a.sort).localeCompare(String(b.sort), locale)))
         .map(({ value, label, count }) => ({ value, label, count }));
       return { key: def.key, label: def.label, type: def.type, unit: def.unit, values };
     })

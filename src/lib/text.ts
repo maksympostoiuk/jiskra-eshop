@@ -26,3 +26,11 @@ export function buildSearchText(parts: Array<string | null | undefined>): string
 export function truncate(input: string, max: number): string {
   return input.length <= max ? input : `${input.slice(0, max - 1).trimEnd()}…`;
 }
+
+export function orderSearchText(o: { number: string; email: string; firstName: string; lastName: string; phone: string; company?: string | null }): string {
+  return buildSearchText([o.number, o.email, o.firstName, o.lastName, o.phone.replace(/\s/g, ""), o.company]);
+}
+
+export function reviewSearchText(r: { authorName: string; authorEmail?: string | null; text: string }): string {
+  return buildSearchText([r.authorName, r.authorEmail, r.text]);
+}

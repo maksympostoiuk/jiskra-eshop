@@ -211,9 +211,11 @@ model ProductSpecValue {
   boolValue        Boolean?
   textCs           String?
   textEn           String?
+  /// locale-independent key of a TEXT value (slug of the Czech text), used in filter URLs (f_<key>=<textKey>)
+  textKey          String?
 
   @@unique([productId, specDefinitionId])
-  @@index([specDefinitionId])
+  @@index([specDefinitionId, textKey])
 }
 
 // ─── Merchandising ────────────────────────────────────────────────────────────
@@ -319,6 +321,8 @@ model Order {
   paymentReference   String?
   itemsTotal         Int
   total              Int
+  /// normalized number + e-mail + names + phone for portable case-insensitive admin search
+  searchText         String              @default("")
   items              OrderItem[]
   history            OrderStatusChange[]
   createdAt          DateTime            @default(now())
@@ -372,6 +376,8 @@ model Review {
   locale        String
   /// PENDING | APPROVED | REJECTED
   status        String     @default("PENDING")
+  /// normalized author + e-mail + text for portable case-insensitive admin search
+  searchText    String     @default("")
   moderatedAt   DateTime?
   moderatedById String?
   moderatedBy   AdminUser? @relation(fields: [moderatedById], references: [id], onDelete: SetNull)
@@ -455,6 +461,15 @@ model ShippingMethodTranslation {
   description      String         @default("")
 
   @@unique([shippingMethodId, locale])
+}
+
+/// Fixed-window rate-limit buckets (shared by all server instances).
+model RateLimitBucket {
+  key     String   @id
+  count   Int      @default(0)
+  resetAt DateTime
+
+  @@index([resetAt])
 }
 
 /// Atomic counters (e.g. order numbers).

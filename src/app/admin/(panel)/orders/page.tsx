@@ -10,6 +10,7 @@ import { Input, Select } from "@/components/ui/form";
 import { prisma } from "@/lib/db";
 import { ORDER_STATUSES, PAYMENT_STATUSES, isOneOf } from "@/lib/domain";
 import { formatMoney, isCurrency, CURRENCIES } from "@/lib/money";
+import { normalizeText } from "@/lib/text";
 
 const PER_PAGE = 20;
 type Search = { q?: string; status?: string; currency?: string; page?: string };
@@ -27,9 +28,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const where: Prisma.OrderWhereInput = {
     ...(isOneOf(ORDER_STATUSES, params.status) ? { status: params.status } : {}),
     ...(isCurrency(params.currency) ? { currency: params.currency } : {}),
-    ...(q
-      ? { OR: [{ number: { contains: q } }, { email: { contains: q.toLowerCase() } }, { lastName: { contains: q } }, { firstName: { contains: q } }] }
-      : {}),
+    // Normalized column → case- and accent-insensitive on SQLite and PostgreSQL alike.
+    ...(q ? { AND: normalizeText(q).split(" ").map((term) => ({ searchText: { contains: term } })) } : {}),
   };
   const [total, orders] = await Promise.all([
     prisma.order.count({ where }),
