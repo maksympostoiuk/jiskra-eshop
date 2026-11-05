@@ -34,6 +34,7 @@ The admin panel lives at `/admin` (credentials = `SEED_ADMIN_EMAIL` / `SEED_ADMI
 | `npm run test:e2e` | Playwright e2e + axe accessibility tests (run `npm run build` first; uses its own `prisma/e2e.db` on port 3200) |
 | `npm run check` | typecheck + lint + unit tests + build |
 | `npm run db:reset` | Drop, recreate and reseed the dev database |
+| `npm run db:backfill` | Fill derived columns (search text, spec keys, aggregates) after upgrading an existing database |
 
 ## Project layout
 
@@ -54,4 +55,8 @@ See `PROGRESS.md` for the phase plan, decisions and current status.
 - Switch `provider = "sqlite"` to `"postgresql"` in `prisma/schema.prisma` and set `DATABASE_URL`.
   The schema avoids SQLite-only features.
 - Stripe is enabled only when `STRIPE_SECRET_KEY` is set (use test keys).
-- Uploads use the `Storage` interface; the dev implementation writes to `public/uploads`.
+- E-mail: `MAILER=console` (default) | `smtp` (`SMTP_URL`) | `file` (`MAIL_OUTBOX`). Set `NEXT_PUBLIC_SITE_URL`
+  so links in e-mails point to the right host.
+- Uploads: `STORAGE=local` (default, `public/uploads`) | `s3` (AWS S3 / Cloudflare R2 / MinIO, see `.env.example`).
+  Files are always served through `/uploads/...`.
+- Customer accounts are optional; registration requires e-mail verification, so configure a real mailer in production.

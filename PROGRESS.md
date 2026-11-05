@@ -21,6 +21,7 @@ Living status document: what is done, what is next, decisions and known issues.
 | 3 | Storefront | ✅ done |
 | 4 | Cart and checkout | ✅ done |
 | 5 | Quality: tests, e2e, final pass | ✅ done |
+| 6 | Second pass: review fixes, known issues, accounts, transports | ✅ done |
 
 ## Decisions
 
@@ -55,6 +56,8 @@ prices in both currencies, free-from thresholds), Counter (order numbers).
   brands, 43 products / 123 variants, specs, 4 badges, 7 banners, ~120 reviews (some pending), 3 shipping methods,
   10 sample orders, admin user from `SEED_ADMIN_*`. The seed wipes existing data first.
 - Tests use a throwaway `prisma/test.db` recreated by `tests/global-setup.ts`.
+- Second pass added `Customer.emailVerifiedAt`, `CustomerSession`, `CustomerToken` (hashed one-time tokens),
+  `RateLimitBucket`, `Order.searchText`, `Review.searchText` and `ProductSpecValue.textKey`.
 
 ## CMS (Phase 2)
 
@@ -63,7 +66,7 @@ prices in both currencies, free-from thresholds), Counter (order numbers).
 - **Auth:** own implementation — bcrypt (cost 12) password hashes, random 32-byte session token in an httpOnly
   `admin_session` cookie, only its SHA-256 stored in `AdminSession` (7-day expiry). Middleware does a cheap cookie
   presence check; `requireAdmin()` validates against the DB in the panel layout and in **every** server action.
-  Login is rate-limited in memory (5 attempts / 15 min per IP+e-mail) — single-node only.
+  Login is rate-limited in the database (5 attempts / 15 min per IP+e-mail, 20 per e-mail) — see Second pass.
 - **Roles:** ADMIN = everything; EDITOR cannot open/act on Admin users and Settings (`requireAdmin({ role: "ADMIN" })`).
 - **Sections:** dashboard (orders by status, revenue per currency all-time + 30 days, low stock, latest orders,
   pending reviews), products, categories (tree, up/down reordering, cycle protection, delete blocked when non-empty),
@@ -92,13 +95,13 @@ Routes (all under `/cs` and `/en`): `/` home, `/category/[slug]`, `/product/[slu
   keyboard navigation), compare / favourites / cart icons with live counters. Sticky on ≥ md only.
 - **Language vs currency:** language = URL prefix + `NEXT_LOCALE` cookie; currency = `CURRENCY` cookie set by a server
   action. Switching language keeps the path; product/category slugs from the other locale redirect to the right
-  slug. Spec facet params (`f_*`) are dropped on language switch because their values are localized.
+  slug, keeping the query. Spec facet params (`f_*`) use locale-independent keys and survive the switch.
 - **Home:** editorial hero (HERO + 2× HERO_SIDE banners, scheduled via CMS), round category tiles, bestsellers with
   category chips, promo tiles (PROMO banners), new arrivals, brand strip, benefits.
 - **Category:** breadcrumbs (+ BreadcrumbList JSON-LD), subcategory chips, filter sidebar / mobile drawer (availability,
   price inputs + presets, brand, rating, filterable specs from the category's SpecDefinitions with counts), sorting,
   grid/list toggle (list shows key specs), pagination. All filter state lives in the URL (`src/lib/catalog/filters.ts`).
-  Facet counts are computed over the unfiltered category scope (simple, keeps options visible).
+  Facet counts are disjunctive (each group counted with the other active filters; options never disappear).
 - **Product:** gallery with thumbnails (images follow the selected colour), variant selectors (swatches + buttons,
   sold-out / other-combination states) updating price, old price/discount, stock and SKU; quantity + add to cart,
   favourite, compare; sticky sub-nav (Description / Specs / Reviews / Similar) with scroll-spy and mini buy button;
@@ -131,17 +134,57 @@ Routes (all under `/cs` and `/en`): `/` home, `/category/[slug]`, `/product/[slu
 
 ## Quality (Phase 5)
 
-- **Vitest (86 tests):** money formatting/parsing, CZK→USD conversion + rounding modes, cart lines/totals/free
-  shipping, stock checks, filter query parsing/serialization/presets, variant selection, spec formatting, category
-  tree, product form round-trip, checkout/review validation incl. localized messages, payment providers + Stripe
-  signature verification, order planning, **order creation integration test** on `prisma/test.db`, message
-  catalogue parity (cs = en) and a static check that every literal translation key used in code exists.
-- **Playwright (16 tests, `tests/e2e`):** purchase flow (mega-menu → category → brand filter + sort → product →
-  colour/storage variant → cart quantity → checkout validation → order → confirmation, cart emptied), language vs
-  currency independence, search suggestions, mobile catalog/filter drawers + no horizontal scroll, CMS login
-  (wrong password), product edit visible in the storefront (stable slug, fill-USD), product validation, editor role
-  restrictions, order status history, and **axe WCAG 2.1 AA scans** (no serious/critical violations) of 7 pages.
-- Final pass: `tsc` clean, ESLint clean, `next build` passes.
+Test suites as of the second pass (see below for what was added):
+
+- **Vitest (135 tests):** money, conversion and rounding; cart lines/totals/stock; filters, presets and
+  text keys; variant selection; spec formatting; category tree and visibility; product form round-trip;
+  checkout/review/account validation with localized messages; link/image-path validation; upload sniffing; locale
+  number formatting; payment providers, Stripe (mocked API) and webhook signatures; mail transports; S3 storage
+  (mocked client); message catalogue parity and a static check of every translation key used in code.
+  **Integration tests on `prisma/test.db`:** order creation (stock, snapshots, price-change guard, inactive
+  categories, account linking), product persistence (SKU swap, foreign variant ids, images, specs), listing filters
+  and disjunctive facets, the DB rate limiter, customer accounts (verification, single-use tokens, takeover
+  attempts, reset) and orphaned-upload cleanup.
+- **Playwright (22 tests, `tests/e2e`):** purchase flow, language vs currency, filters surviving a language
+  switch, currency switch dropping price bounds, search suggestions, mobile drawers, the full account flow
+  (register → verify via the file mail outbox → sign in → pre-filled checkout → order history → password reset),
+  CMS login/edit/validation/roles/order history, security headers, and **axe WCAG 2.1 AA scans** of 9 pages.
+- `tsc`, ESLint and `next build` are clean.
+
+## Second pass (review) — what changed
+
+Fixed, most severe first:
+
+1. **Image URLs** entered in the CMS are restricted to site-relative paths (an external URL crashed storefront
+   pages through `next/image`); protocol-relative links (`//host`) are rejected.
+2. **Uploads** are validated by magic bytes, not the browser MIME type; one file per request (no body-limit failures).
+3. **Price-change guard:** an order is refused if the server-side total differs from the total the customer saw.
+4. **Currency switch** re-quotes cart, checkout, favourites and compare (they kept old-currency prices) and drops
+   `pmin/pmax` from listing URLs (bounds were reinterpreted in the new currency).
+5. **Product save:** two-phase SKU update (swapping SKUs crashed), brand/badge ids validated, unique-violation races
+   reported; the transaction moved to `src/lib/catalog/save-product.ts`.
+6. **Stripe:** amount, currency and order id must match before an order is marked paid (return page + webhook).
+7. **Login CSRF:** e-mail verification and password reset no longer sign the visitor in.
+8. **Security headers:** `frame-ancestors 'none'`/`X-Frame-Options` (CMS clickjacking), nosniff, referrer and
+   permissions policies; the order page (token in URL) sends no referrer.
+9. **Visibility:** products in deactivated categories (or under a deactivated parent) are hidden everywhere and
+   cannot be ordered; the category tree no longer promotes grandchildren of inactive categories.
+10. Smaller: product without variants (crash), stale sub-nav variant after navigation, hard-coded `courier`
+    shipping code, concurrent status change (500), cross-locale category redirect dropping filters, guest checkout
+    overwriting a registered customer's profile, admin logged out when changing their own password, malformed
+    input to public actions, e-mails delaying checkout (now sent with `after()`).
+11. Consistency: locale number formatting for ratings and discounts, untranslated labels, modal behaviour of the
+    mobile filter drawer and CMS navigation (Escape, focus trap/restore, scroll lock), dead code and unused
+    messages removed, orphaned uploads deleted after saves/deletes.
+
+Known issues resolved: database-backed rate limits, portable case-insensitive admin search (`searchText` on orders
+and reviews, brand slug), locale-independent spec filters (`textKey`), disjunctive facets.
+
+Not-done items implemented: **customer accounts** (register with e-mail verification, sign-in, reset, profile,
+order history, pre-filled checkout), **SMTP / file mailers** and **S3-compatible storage**.
+
+Upgrading an existing database: `npm run db:push` then `npm run db:backfill` (fills `searchText`, `textKey` and
+aggregates without deleting data), or simply re-seed.
 
 ## How to run locally
 
@@ -155,7 +198,8 @@ npm run test:e2e       # after `npm run build`
 ```
 
 Admin login: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `.env` (defaults `admin@jiskra.local` /
-`change-me-please`). Order e-mails are printed in the dev-server console.
+`change-me-please`). E-mails (order confirmations, account verification/reset links) are printed in the dev-server
+console; set `MAILER=file` to collect them in `tmp/mail-outbox.jsonl` or `MAILER=smtp` + `SMTP_URL` to send them.
 
 ## What to check manually in the browser
 
@@ -163,35 +207,38 @@ Admin login: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `.env` (defaults `a
 2. Header: "Katalog" mega-menu (hover categories; Esc closes), search suggestions with ↑/↓/Enter, CS/EN and
    CZK/USD switchers are independent and remembered after reload.
 3. Category `/cs/category/chytre-telefony`: tick filters (brand, RAM, OS, 5G, price presets), sort, list/grid —
-   the URL updates; copy the URL into a new tab → same result. Try the filter drawer on a phone-sized window.
+   the URL updates and counts change per group; switch language → same filters. Try the drawer on a phone.
 4. Product `/cs/product/nordvik-aurora-8-pro`: colour swatches swap the gallery, storage buttons show sold-out /
    other-combination states, price + SKU + stock update; sticky sub-nav highlights sections; submit a review
    (then approve it in CMS → Recenze and see the rating update).
 5. Favourites / compare icons on cards → `/cs/favorites`, `/cs/compare` ("differences only").
 6. Cart → checkout → place an order with bank transfer and with cash on delivery; check the console e-mail and the
    confirmation page; verify stock decreased in CMS → Produkty.
-7. CMS: edit a product (tabs per language, add a variant, "fill USD", upload an image by drag & drop and reorder),
-   reorder categories, schedule a banner, change an order status (customer gets an e-mail; cancelling restocks),
-   create an EDITOR and confirm they can't open Settings/Admin users, change the USD rate + "recalculate".
-8. `/sitemap.xml`, `/robots.txt`, view-source of a product page (hreflang alternates, Product/BreadcrumbList JSON-LD).
-9. Optional Stripe: set `STRIPE_SECRET_KEY` (test key) → "Platební karta (Stripe)" appears at checkout; for webhooks
-   also set `STRIPE_WEBHOOK_SECRET` and forward events to `/api/stripe/webhook`.
+7. Accounts: `/cs/account/register` → open the verification link from the console → sign in → checkout is
+   pre-filled → the order appears in "Můj účet"; try "Zapomněli jste heslo?".
+8. CMS: edit a product (tabs per language, add a variant, "fill USD", upload an image by drag & drop and reorder),
+   reorder categories, deactivate a category (its products disappear from the shop), schedule a banner, change an
+   order status (customer gets an e-mail; cancelling restocks), create an EDITOR and confirm they can't open
+   Settings/Admin users, change the USD rate + "recalculate".
+9. `/sitemap.xml`, `/robots.txt`, view-source of a product page (hreflang alternates, Product/BreadcrumbList JSON-LD).
+10. Optional Stripe: set `STRIPE_SECRET_KEY` (test key) → "Platební karta (Stripe)" appears at checkout; for webhooks
+    also set `STRIPE_WEBHOOK_SECRET` and forward events to `/api/stripe/webhook`.
 
 ## Ideas / not implemented (outside the spec)
 
-- Customer accounts UI (the `Customer` model exists; guest checkout upserts customers by e-mail).
-- DNS-style bundles, warranty add-ons, instalment prices, user photo strip, news/blog cards.
-- Real mail transport and object storage (S3/R2) — add implementations of `Mailer` / `Storage`.
-- Facet counts are computed over the unfiltered category (not "disjunctive" counts per active filter).
+Deliberately left out because the spec does not ask for them (no features outside the spec without a
+reason): DNS-style bundles, warranty add-ons, instalment prices, user photo strip, news/blog cards, a customer list
+in the CMS.
 
-## Known issues
+## Known issues / still open
 
-- Rate limiting (login, reviews, checkout) is in-memory → per server instance only.
-- Some admin searches (brand name, review text, order name) use plain `contains`, which is case-sensitive on
-  PostgreSQL; product search uses the normalized `searchText` column and is portable.
-- Spec TEXT facet values are per-locale strings, so `f_*` params are dropped when switching language.
-- Stripe was implemented against the documented REST API but not exercised with real keys in this environment.
+- **Stripe** is covered by mocked-API tests but has not been run against real Stripe test keys here.
+- **Dependency advisories:** remaining `npm audit` findings need major upgrades — Next 16 (postcss copy bundled in
+  Next 15.5), Prisma 7 (`deepmerge-ts` in `@prisma/config`), Vitest 5 (tinypool, dev only), typescript-eslint via
+  `eslint-config-next`. Plan these as a separate upgrade; Prisma 7 also needs `prisma.config.ts` (the
+  `package.json#prisma` key is deprecated) and driver adapters.
+- Uploads that are added in the editor but never saved remain in storage (only previously saved files are cleaned).
 - `npm run db:reset` resets the dev database. Tests use
   their own throwaway DB files (`prisma/test.db`, `prisma/e2e.db`).
-- `npm audit` reports advisories in dev-only tooling (vitest's tinypool) and in the postcss copy bundled
-  inside Next 15.5; no runtime exposure for this app. Revisit when upgrading majors.
+- Rate-limit buckets are cleaned opportunistically; very high traffic deployments may prefer Redis behind the same
+  function signature.
