@@ -16,8 +16,8 @@ Living status document: what is done, what is next, decisions and known issues.
 | Phase | Scope | Status |
 | --- | --- | --- |
 | 0 | Setup: Next.js, TS, Tailwind, Prisma, next-intl, Zod, Vitest, tokens, brand | ✅ done |
-| 1 | Prisma data model + seed | ⏳ next |
-| 2 | CMS / admin panel (`/admin`) | ☐ |
+| 1 | Prisma data model + seed | ✅ done |
+| 2 | CMS / admin panel (`/admin`) | ⏳ next |
 | 3 | Storefront | ☐ |
 | 4 | Cart and checkout | ☐ |
 | 5 | Quality: tests, e2e, final pass | ☐ |
@@ -34,6 +34,27 @@ Living status document: what is done, what is next, decisions and known issues.
 - **Money:** integer minor units everywhere (`src/lib/money.ts`). Exchange rate stored as an integer
   "CZK per 1 USD × 10 000" so CZK→USD conversion is exact (BigInt math). USD rounding modes: cent / whole / .99.
 - **Validation messages:** Zod 4 built-in locales (`cs`, `en`) are passed per parse, custom messages are i18n keys.
+
+## Data model (Phase 1)
+
+`prisma/schema.prisma` — Category (tree) + CategoryTranslation, Brand, Product + ProductTranslation,
+ProductVariant + VariantOption (color/storage/memory/size/connectivity/edition, labels cs/en, swatch hex),
+ProductImage (ordered, optionally tied to a variant/colour), SpecDefinition (+translation: label, unit) per category
+and ProductSpecValue (number / bool / text cs+en), Badge (+translation, colours), Banner (+translation incl. link),
+Customer, Order + OrderItem (snapshots) + OrderStatusChange, Review (moderated), AdminUser + AdminSession,
+Settings (singleton: USD rate, rounding, contacts, bank details, low-stock threshold), ShippingMethod (+translation,
+prices in both currencies, free-from thresholds), Counter (order numbers).
+
+- Enum-like fields are strings validated in code (`src/lib/domain.ts`) — keeps the schema portable.
+- Product has denormalized `minPriceCzk/Usd`, `inStock`, `ratingAvg/Count`, `soldCount` and
+  `ProductTranslation.searchText` (lowercase, no diacritics) — refreshed by `refreshProductAggregates()`.
+- Spec definitions apply to the category they belong to **and its descendants**.
+- Placeholder product images are generated SVG device illustrations served from `/ph/<kind>/<hex>/<view>.svg`
+  (`src/lib/placeholder.ts`), so the repo contains no third-party imagery.
+- Seed (`prisma/seed.ts`, data in `prisma/seed/catalog-data.ts`): 8 top-level + 16 sub-categories, 10 fictional
+  brands, 43 products / 123 variants, specs, 4 badges, 7 banners, ~120 reviews (some pending), 3 shipping methods,
+  10 sample orders, admin user from `SEED_ADMIN_*`. The seed wipes existing data first.
+- Tests use a throwaway `prisma/test.db` recreated by `tests/global-setup.ts`.
 
 ## Known issues
 

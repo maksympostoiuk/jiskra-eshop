@@ -1,0 +1,464 @@
+// Jiskra e-shop data model.
+//
+// Portability rules (SQLite in dev, PostgreSQL in production):
+// - No native enums: "enum-like" columns are Strings validated by Zod / TS unions (see src/lib/domain.ts).
+// - No Json columns, no raw SQL, no case-insensitive `mode` filters (search uses a normalized `searchText` column).
+// - Money is always Int in minor units (haléře / cents).
+//
+// Translations: main content entities have a `*Translation` table with one row per locale.
+// Small inline labels (variant option values, text spec values, image alts) use `*Cs` / `*En` columns.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Catalogue ────────────────────────────────────────────────────────────────
+
+model Category {
+  id              String                @id @default(cuid())
+  parentId        String?
+  parent          Category?             @relation("CategoryTree", fields: [parentId], references: [id])
+  children        Category[]            @relation("CategoryTree")
+  /// lucide icon name, see src/lib/category-icons.ts
+  icon            String                @default("package")
+  sortOrder       Int                   @default(0)
+  isActive        Boolean               @default(true)
+  translations    CategoryTranslation[]
+  products        Product[]
+  specDefinitions SpecDefinition[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([parentId, sortOrder])
+}
+
+model CategoryTranslation {
+  id             String   @id @default(cuid())
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  locale         String
+  name           String
+  slug           String
+  description    String   @default("")
+  seoTitle       String?
+  seoDescription String?
+
+  @@unique([categoryId, locale])
+  @@unique([locale, slug])
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  logoUrl   String?
+  website   String?
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id           String               @id @default(cuid())
+  categoryId   String
+  category     Category             @relation(fields: [categoryId], references: [id])
+  brandId      String?
+  brand        Brand?               @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  /// DRAFT | PUBLISHED
+  status       String               @default("DRAFT")
+  isFeatured   Boolean              @default(false)
+  // Denormalized aggregates for fast listing/sorting; recomputed by refreshProductAggregates().
+  minPriceCzk  Int                  @default(0)
+  minPriceUsd  Int                  @default(0)
+  inStock      Boolean              @default(false)
+  ratingAvg    Float                @default(0)
+  ratingCount  Int                  @default(0)
+  soldCount    Int                  @default(0)
+  publishedAt  DateTime?
+  translations ProductTranslation[]
+  variants     ProductVariant[]
+  images       ProductImage[]
+  specValues   ProductSpecValue[]
+  badges       Badge[]
+  reviews      Review[]
+  orderItems   OrderItem[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([categoryId, status])
+  @@index([brandId])
+  @@index([status, soldCount])
+  @@index([status, createdAt])
+}
+
+model ProductTranslation {
+  id               String  @id @default(cuid())
+  productId        String
+  product          Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  locale           String
+  name             String
+  slug             String
+  shortDescription String  @default("")
+  description      String  @default("")
+  seoTitle         String?
+  seoDescription   String?
+  /// lowercase, diacritics-free name + brand + sku, for portable `contains` search
+  searchText       String  @default("")
+
+  @@unique([productId, locale])
+  @@unique([locale, slug])
+}
+
+model ProductVariant {
+  id          String          @id @default(cuid())
+  productId   String
+  product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku         String          @unique
+  priceCzk    Int
+  priceUsd    Int
+  oldPriceCzk Int?
+  oldPriceUsd Int?
+  stock       Int             @default(0)
+  sortOrder   Int             @default(0)
+  options     VariantOption[]
+  images      ProductImage[]
+  orderItems  OrderItem[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([productId, sortOrder])
+}
+
+/// One attribute of a variant, e.g. name="color" value="black" (labels per locale, optional swatch colour).
+model VariantOption {
+  id        String         @id @default(cuid())
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  /// attribute key: color | storage | memory | size | connectivity | edition (labels in messages)
+  name      String
+  /// stable machine value, used to match variants across attributes
+  value     String
+  labelCs   String
+  labelEn   String
+  colorHex  String?
+  sortOrder Int            @default(0)
+
+  @@unique([variantId, name])
+}
+
+model ProductImage {
+  id        String          @id @default(cuid())
+  productId String
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// optional: image shown when this variant (e.g. a colour) is selected
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  url       String
+  altCs     String          @default("")
+  altEn     String          @default("")
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+
+  @@index([productId, sortOrder])
+}
+
+model SpecDefinition {
+  id           String                      @id @default(cuid())
+  categoryId   String
+  category     Category                    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  /// machine key, unique per category; used in filter URLs (f_<key>)
+  key          String
+  /// NUMBER | TEXT | BOOLEAN
+  type         String                      @default("TEXT")
+  isFilterable Boolean                     @default(false)
+  /// shown in listing rows and in the product summary
+  isKey        Boolean                     @default(false)
+  sortOrder    Int                         @default(0)
+  translations SpecDefinitionTranslation[]
+  values       ProductSpecValue[]
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+
+  @@unique([categoryId, key])
+}
+
+model SpecDefinitionTranslation {
+  id               String         @id @default(cuid())
+  specDefinitionId String
+  specDefinition   SpecDefinition @relation(fields: [specDefinitionId], references: [id], onDelete: Cascade)
+  locale           String
+  label            String
+  /// unit suffix shown after values ("GB", "″", "dní" / "days"); empty for none
+  unit             String         @default("")
+
+  @@unique([specDefinitionId, locale])
+}
+
+model ProductSpecValue {
+  id               String         @id @default(cuid())
+  productId        String
+  product          Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  specDefinitionId String
+  specDefinition   SpecDefinition @relation(fields: [specDefinitionId], references: [id], onDelete: Cascade)
+  numberValue      Float?
+  boolValue        Boolean?
+  textCs           String?
+  textEn           String?
+
+  @@unique([productId, specDefinitionId])
+  @@index([specDefinitionId])
+}
+
+// ─── Merchandising ────────────────────────────────────────────────────────────
+
+model Badge {
+  id           String             @id @default(cuid())
+  code         String             @unique
+  bgColor      String             @default("#25212b")
+  textColor    String             @default("#ffffff")
+  sortOrder    Int                @default(0)
+  translations BadgeTranslation[]
+  products     Product[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+model BadgeTranslation {
+  id      String @id @default(cuid())
+  badgeId String
+  badge   Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  locale  String
+  label   String
+
+  @@unique([badgeId, locale])
+}
+
+model Banner {
+  id           String              @id @default(cuid())
+  /// HERO | HERO_SIDE | PROMO
+  placement    String              @default("PROMO")
+  imageUrl     String?
+  bgColor      String              @default("#e1eeeb")
+  textColor    String              @default("#25212b")
+  sortOrder    Int                 @default(0)
+  isActive     Boolean             @default(true)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  translations BannerTranslation[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([placement, isActive, sortOrder])
+}
+
+model BannerTranslation {
+  id       String  @id @default(cuid())
+  bannerId String
+  banner   Banner  @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+  locale   String
+  title    String
+  subtitle String  @default("")
+  ctaLabel String  @default("")
+  /// storefront path without the locale prefix (e.g. "/category/chytre-telefony") or an absolute URL
+  linkUrl  String  @default("")
+  imageAlt String  @default("")
+
+  @@unique([bannerId, locale])
+}
+
+// ─── Customers and orders ─────────────────────────────────────────────────────
+
+model Customer {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  firstName    String   @default("")
+  lastName     String   @default("")
+  phone        String?
+  /// null = guest customer without an account
+  passwordHash String?
+  orders       Order[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Order {
+  id                 String              @id @default(cuid())
+  number             String              @unique
+  /// secret used in the confirmation URL so order numbers cannot be enumerated
+  accessToken        String              @unique
+  customerId         String?
+  customer           Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  /// NEW | CONFIRMED | PROCESSING | SHIPPED | DELIVERED | CANCELLED
+  status             String              @default("NEW")
+  locale             String
+  currency           String
+  email              String
+  phone              String
+  firstName          String
+  lastName           String
+  company            String?
+  street             String
+  city               String
+  zip                String
+  country            String
+  note               String?
+  shippingMethodId   String?
+  shippingMethodName String
+  shippingPrice      Int
+  /// payment provider id: bank_transfer | cod | stripe
+  paymentMethod      String
+  /// PENDING | PAID | FAILED | REFUNDED
+  paymentStatus      String              @default("PENDING")
+  paymentReference   String?
+  itemsTotal         Int
+  total              Int
+  items              OrderItem[]
+  history            OrderStatusChange[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+}
+
+/// Snapshot of what was bought, at the price and in the currency of the purchase.
+model OrderItem {
+  id          String          @id @default(cuid())
+  orderId     String
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId   String?
+  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  productName String
+  variantName String          @default("")
+  sku         String
+  imageUrl    String?
+  currency    String
+  unitPrice   Int
+  quantity    Int
+  lineTotal   Int
+}
+
+model OrderStatusChange {
+  id          String     @id @default(cuid())
+  orderId     String
+  order       Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus  String?
+  toStatus    String
+  note        String?
+  changedById String?
+  changedBy   AdminUser? @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model Review {
+  id            String     @id @default(cuid())
+  productId     String
+  product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  authorName    String
+  authorEmail   String?
+  rating        Int
+  text          String
+  locale        String
+  /// PENDING | APPROVED | REJECTED
+  status        String     @default("PENDING")
+  moderatedAt   DateTime?
+  moderatedById String?
+  moderatedBy   AdminUser? @relation(fields: [moderatedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime   @default(now())
+
+  @@index([productId, status])
+  @@index([status, createdAt])
+}
+
+// ─── Administration ───────────────────────────────────────────────────────────
+
+model AdminUser {
+  id            String              @id @default(cuid())
+  email         String              @unique
+  name          String
+  passwordHash  String
+  /// ADMIN | EDITOR
+  role          String              @default("EDITOR")
+  isActive      Boolean             @default(true)
+  lastLoginAt   DateTime?
+  sessions      AdminSession[]
+  statusChanges OrderStatusChange[]
+  reviews       Review[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+model AdminSession {
+  /// SHA-256 of the random session token stored in the httpOnly cookie
+  id          String    @id
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([adminUserId])
+}
+
+/// Singleton row (id = 1).
+model Settings {
+  id                Int      @id @default(1)
+  /// CZK per 1 USD × 10 000 (e.g. 22.80 → 228000)
+  usdRate           Int      @default(228000)
+  /// CENT | WHOLE | NINETY_NINE
+  usdRounding       String   @default("NINETY_NINE")
+  shopName          String   @default("Jiskra")
+  contactEmail      String   @default("")
+  contactPhone      String   @default("")
+  address           String   @default("")
+  companyId         String   @default("")
+  bankAccount       String   @default("")
+  iban              String   @default("")
+  lowStockThreshold Int      @default(5)
+  updatedAt         DateTime @updatedAt
+}
+
+model ShippingMethod {
+  id           String                      @id @default(cuid())
+  code         String                      @unique
+  priceCzk     Int
+  priceUsd     Int
+  /// free shipping from this order value (minor units), null = never free
+  freeFromCzk  Int?
+  freeFromUsd  Int?
+  /// whether cash on delivery can be combined with this method
+  allowsCod    Boolean                     @default(true)
+  isActive     Boolean                     @default(true)
+  sortOrder    Int                         @default(0)
+  translations ShippingMethodTranslation[]
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+}
+
+model ShippingMethodTranslation {
+  id               String         @id @default(cuid())
+  shippingMethodId String
+  shippingMethod   ShippingMethod @relation(fields: [shippingMethodId], references: [id], onDelete: Cascade)
+  locale           String
+  name             String
+  description      String         @default("")
+
+  @@unique([shippingMethodId, locale])
+}
+
+/// Atomic counters (e.g. order numbers).
+model Counter {
+  key   String @id
+  value Int    @default(0)
+}
