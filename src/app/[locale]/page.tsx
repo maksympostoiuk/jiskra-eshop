@@ -65,7 +65,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {(hero || side.length > 0) && (
         <section aria-label={t("promotions")} className="mt-6 grid gap-4 lg:grid-cols-[1.9fr_1fr]">
           {hero?.tr && (
-            <BannerLink href={hero.tr.linkUrl} className="group relative grid min-h-[22rem] overflow-hidden rounded-2xl p-7 sm:grid-cols-[1fr_0.9fr] sm:p-10">
+            <BannerLink href={hero.tr.linkUrl} className="group relative grid min-h-64 overflow-hidden sm:min-h-[22rem] rounded-2xl p-7 sm:grid-cols-[1fr_0.9fr] sm:p-10">
               <span className="absolute inset-0" style={{ background: hero.bgColor }} aria-hidden="true" />
               <div className="relative z-10 flex flex-col justify-end gap-4 self-stretch" style={{ color: hero.textColor }}>
                 <h2 className="text-4xl leading-[1.05] sm:text-5xl lg:text-6xl">{hero.tr.title}</h2>

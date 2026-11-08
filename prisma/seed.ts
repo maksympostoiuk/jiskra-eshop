@@ -255,7 +255,7 @@ async function seedBanners(catSlugs: Map<string, Tr>) {
     link: Tr;
     alt: Tr;
   }> = [
-    { placement: "HERO", bg: "#e1eeeb", fg: "#25212b", image: placeholderUrl("headphones", "d8c3a5", 1), title: ["Podzim plný hudby", "An autumn full of music"], subtitle: ["Sluchátka a reproduktory až o 25 % levněji", "Headphones and speakers up to 25% off"], cta: ["Vybrat sluchátka", "Shop headphones"], link: cat("headphones"), alt: ["Bezdrátová sluchátka v pískové barvě", "Sand-coloured wireless headphones"] },
+    { placement: "HERO", bg: "#e1eeeb", fg: "#25212b", image: placeholderUrl("headphones", "d8c3a5", 1), title: ["Podzim plný hudby", "An autumn full of music"], subtitle: ["Sluchátka a reproduktory až o 25\u00a0% levněji", "Headphones and speakers up to 25% off"], cta: ["Vybrat sluchátka", "Shop headphones"], link: cat("headphones"), alt: ["Bezdrátová sluchátka v pískové barvě", "Sand-coloured wireless headphones"] },
     { placement: "HERO_SIDE", bg: "#fcefd9", fg: "#25212b", image: placeholderUrl("phone", "b7a6c9", 2), title: ["Nová Aurora 8 Pro", "The new Aurora 8 Pro"], subtitle: ["Fotoaparát 200 Mpx", "200 MP camera"], cta: ["Prohlédnout", "Discover"], link: ["/product/nordvik-aurora-8-pro", "/product/nordvik-aurora-8-pro"], alt: ["Telefon v levandulové barvě", "Lavender phone"] },
     { placement: "HERO_SIDE", bg: "#25212b", fg: "#ffffff", image: placeholderUrl("controller", "a8463d", 1), title: ["Herní týdny", "Gaming weeks"], subtitle: ["Konzole a ovladače v akci", "Consoles and controllers on sale"], cta: ["Do herního světa", "Enter gaming"], link: cat("gaming"), alt: ["Červený herní ovladač", "Red game controller"] },
     { placement: "PROMO", bg: "#f2ede5", fg: "#25212b", image: placeholderUrl("laptop", "c9ccd1", 1), title: ["Notebooky pro studenty", "Laptops for students"], subtitle: ["Lehké, tiché, s celodenní výdrží", "Light, quiet, all-day battery"], cta: ["Vybrat", "Browse"], link: cat("laptops"), alt: ["Stříbrný notebook", "Silver laptop"] },
@@ -408,10 +408,10 @@ async function main() {
       usdRate: USD_RATE,
       usdRounding: "NINETY_NINE",
       shopName: "Jiskra",
-      contactEmail: "obchod@jiskra.local",
+      contactEmail: "obchod@jiskra.example",
       contactPhone: "+420 123 456 789",
       address: "Ukázková 1, 110 00 Praha 1",
-      companyId: "12345678",
+      companyId: "00000000",
       bankAccount: "0000000000/0000",
       iban: "CZ00 0000 0000 0000 0000 0000",
       lowStockThreshold: 5,

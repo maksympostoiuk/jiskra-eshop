@@ -1,7 +1,23 @@
 # Jiskra — electronics e-shop with a built-in CMS
 
-Self-written online store for consumer electronics with its own admin panel. No third-party CMS or
-e-commerce engine. Czech (default) + English, CZK (default) + USD.
+An online store for consumer electronics with its own admin panel (CMS), built from scratch — no third-party
+CMS or e-commerce engine. Czech (default) + English, CZK (default) + USD.
+
+All brands, products and contact details in the demo data are fictional; product images are generated SVG
+illustrations.
+
+## Features
+
+- **Storefront:** mega-menu catalog, search with suggestions, category pages with URL-synced filters (price, brand,
+  availability, rating, specifications), sorting and grid/list views, product pages with variant selectors
+  (colour, storage…), gallery, specifications, reviews and related products, favourites and comparison.
+- **Checkout:** cart with stock checks, guest checkout or optional customer accounts, shipping methods, bank
+  transfer / cash on delivery (Stripe when configured), order confirmation e-mails.
+- **CMS:** dashboard, products (per-language content, variant editor, specs, image upload with drag & drop),
+  categories, brands, specifications, banners, badges, review moderation, orders with status history, admin users
+  with roles, settings (exchange rate, contacts, shipping).
+- **Quality:** strict TypeScript, Zod validation shared by client and server, unit/integration tests (Vitest),
+  end-to-end and accessibility tests (Playwright + axe), SEO (hreflang, sitemap, structured data).
 
 **Stack:** Next.js 15 (App Router) · TypeScript (strict) · Tailwind CSS 4 · Prisma 6 (SQLite in dev,
 PostgreSQL-ready) · next-intl · Zod · Vitest · Playwright.
@@ -58,7 +74,7 @@ src/lib/                   domain logic (money, cart, filters, orders, payments,
 src/i18n/                  next-intl routing and request config
 ```
 
-See `PROGRESS.md` for the phase plan, decisions and current status.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture, design decisions, testing and known issues.
 
 ## Production notes
 

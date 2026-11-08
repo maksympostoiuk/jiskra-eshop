@@ -1,6 +1,6 @@
-# PROGRESS
+# Architecture and engineering notes
 
-Living status document: what is done, what is next, decisions and known issues.
+How the shop is put together, the main design decisions, how it is tested and what is still open.
 
 ## Brand
 
@@ -10,18 +10,6 @@ Living status document: what is done, what is next, decisions and known issues.
   near-black ink `#25212b`, deep teal brand `#1d5c55`, amber spark `#e3992c`, terracotta sale `#b23a2b`.
 - **Type:** Fraunces (serif display, headings) + Inter (body), self-hosted via `@fontsource-variable/*`.
 - **Shape:** cards `rounded-xl` (20px), pill buttons, soft shadows, airy spacing.
-
-## Phase plan
-
-| Phase | Scope | Status |
-| --- | --- | --- |
-| 0 | Setup: Next.js, TS, Tailwind, Prisma, next-intl, Zod, Vitest, tokens, brand | ✅ done |
-| 1 | Prisma data model + seed | ✅ done |
-| 2 | CMS / admin panel (`/admin`) | ✅ done |
-| 3 | Storefront | ✅ done |
-| 4 | Cart and checkout | ✅ done |
-| 5 | Quality: tests, e2e, final pass | ✅ done |
-| 6 | Second pass: review fixes, known issues, accounts, transports | ✅ done |
 
 ## Decisions
 
@@ -36,7 +24,7 @@ Living status document: what is done, what is next, decisions and known issues.
   "CZK per 1 USD × 10 000" so CZK→USD conversion is exact (BigInt math). USD rounding modes: cent / whole / .99.
 - **Validation messages:** Zod 4 built-in locales (`cs`, `en`) are passed per parse, custom messages are i18n keys.
 
-## Data model (Phase 1)
+## Data model
 
 `prisma/schema.prisma` — Category (tree) + CategoryTranslation, Brand, Product + ProductTranslation,
 ProductVariant + VariantOption (color/storage/memory/size/connectivity/edition, labels cs/en, swatch hex),
@@ -56,17 +44,18 @@ prices in both currencies, free-from thresholds), Counter (order numbers).
   brands, 43 products / 123 variants, specs, 4 badges, 7 banners, ~120 reviews (some pending), 3 shipping methods,
   10 sample orders, admin user from `SEED_ADMIN_*`. The seed wipes existing data first.
 - Tests use a throwaway `prisma/test.db` recreated by `tests/global-setup.ts`.
-- Second pass added `Customer.emailVerifiedAt`, `CustomerSession`, `CustomerToken` (hashed one-time tokens),
-  `RateLimitBucket`, `Order.searchText`, `Review.searchText` and `ProductSpecValue.textKey`.
+- Accounts and security: `Customer.emailVerifiedAt`, `CustomerSession`, `CustomerToken` (hashed one-time tokens),
+  `RateLimitBucket`; portable search columns `Order.searchText`, `Review.searchText`; `ProductSpecValue.textKey`
+  (locale-independent filter value).
 
-## CMS (Phase 2)
+## CMS (`/admin`)
 
 `/admin` (not localized; CS/EN switch in the top bar stores `ADMIN_LOCALE`). Login at `/admin/login`.
 
 - **Auth:** own implementation — bcrypt (cost 12) password hashes, random 32-byte session token in an httpOnly
   `admin_session` cookie, only its SHA-256 stored in `AdminSession` (7-day expiry). Middleware does a cheap cookie
   presence check; `requireAdmin()` validates against the DB in the panel layout and in **every** server action.
-  Login is rate-limited in the database (5 attempts / 15 min per IP+e-mail, 20 per e-mail) — see Second pass.
+  Login is rate-limited in the database (5 attempts / 15 min per IP+e-mail, 20 per e-mail).
 - **Roles:** ADMIN = everything; EDITOR cannot open/act on Admin users and Settings (`requireAdmin({ role: "ADMIN" })`).
 - **Sections:** dashboard (orders by status, revenue per currency all-time + 30 days, low stock, latest orders,
   pending reviews), products, categories (tree, up/down reordering, cycle protection, delete blocked when non-empty),
@@ -84,10 +73,10 @@ prices in both currencies, free-from thresholds), Counter (order numbers).
   unique SKU, unique spec key) on the server. Deletes go through a confirmation `<dialog>`.
 - **Messages check:** `src/i18n/keys.test.ts` statically verifies that literal translation keys used in code exist.
 
-## Storefront (Phase 3)
+## Storefront
 
 Routes (all under `/cs` and `/en`): `/` home, `/category/[slug]`, `/product/[slug]`, `/search?q=`, `/favorites`,
-`/compare` (+ `/cart`, `/checkout`, `/order/[number]` in Phase 4). `sitemap.xml`, `robots.txt` at the root.
+`/compare`, `/cart`, `/checkout`, `/order/[number]`, `/account/*`. `sitemap.xml`, `robots.txt` at the root.
 
 - **Header** (`src/components/store/site-header.tsx`): utility bar (free-shipping note, phone, CS/EN + CZK/USD
   switchers), logo, big "Catalog" button → DNS-style mega-menu (icons left, subcategories with counts right;
@@ -111,7 +100,7 @@ Routes (all under `/cs` and `/en`): `/` home, `/category/[slug]`, `/product/[slu
   category with a shared spec table and "differences only".
 - **Images:** `next/image`; generated SVG placeholders are served unoptimized, uploads are optimized.
 
-## Cart and checkout (Phase 4)
+## Cart and checkout
 
 - **Cart** (`/cart`): lines `{variantId, qty}` in localStorage; prices, names, images and stock are re-quoted on the
   server (`quoteCart`) in the visitor's currency. Quantity steppers capped by stock, stock/unavailable warnings with
@@ -132,9 +121,7 @@ Routes (all under `/cs` and `/en`): `/` home, `/category/[slug]`, `/product/[slu
   payment instructions, items and address.
 - **Status e-mails:** changing an order's status in the CMS e-mails the customer (`sendOrderStatusEmail`).
 
-## Quality (Phase 5)
-
-Test suites as of the second pass (see below for what was added):
+## Testing
 
 - **Vitest (135 tests):** money, conversion and rounding; cart lines/totals/stock; filters, presets and
   text keys; variant selection; spec formatting; category tree and visibility; product form round-trip;
@@ -150,41 +137,6 @@ Test suites as of the second pass (see below for what was added):
   (register → verify via the file mail outbox → sign in → pre-filled checkout → order history → password reset),
   CMS login/edit/validation/roles/order history, security headers, and **axe WCAG 2.1 AA scans** of 9 pages.
 - `tsc`, ESLint and `next build` are clean.
-
-## Second pass (review) — what changed
-
-Fixed, most severe first:
-
-1. **Image URLs** entered in the CMS are restricted to site-relative paths (an external URL crashed storefront
-   pages through `next/image`); protocol-relative links (`//host`) are rejected.
-2. **Uploads** are validated by magic bytes, not the browser MIME type; one file per request (no body-limit failures).
-3. **Price-change guard:** an order is refused if the server-side total differs from the total the customer saw.
-4. **Currency switch** re-quotes cart, checkout, favourites and compare (they kept old-currency prices) and drops
-   `pmin/pmax` from listing URLs (bounds were reinterpreted in the new currency).
-5. **Product save:** two-phase SKU update (swapping SKUs crashed), brand/badge ids validated, unique-violation races
-   reported; the transaction moved to `src/lib/catalog/save-product.ts`.
-6. **Stripe:** amount, currency and order id must match before an order is marked paid (return page + webhook).
-7. **Login CSRF:** e-mail verification and password reset no longer sign the visitor in.
-8. **Security headers:** `frame-ancestors 'none'`/`X-Frame-Options` (CMS clickjacking), nosniff, referrer and
-   permissions policies; the order page (token in URL) sends no referrer.
-9. **Visibility:** products in deactivated categories (or under a deactivated parent) are hidden everywhere and
-   cannot be ordered; the category tree no longer promotes grandchildren of inactive categories.
-10. Smaller: product without variants (crash), stale sub-nav variant after navigation, hard-coded `courier`
-    shipping code, concurrent status change (500), cross-locale category redirect dropping filters, guest checkout
-    overwriting a registered customer's profile, admin logged out when changing their own password, malformed
-    input to public actions, e-mails delaying checkout (now sent with `after()`).
-11. Consistency: locale number formatting for ratings and discounts, untranslated labels, modal behaviour of the
-    mobile filter drawer and CMS navigation (Escape, focus trap/restore, scroll lock), dead code and unused
-    messages removed, orphaned uploads deleted after saves/deletes.
-
-Known issues resolved: database-backed rate limits, portable case-insensitive admin search (`searchText` on orders
-and reviews, brand slug), locale-independent spec filters (`textKey`), disjunctive facets.
-
-Not-done items implemented: **customer accounts** (register with e-mail verification, sign-in, reset, profile,
-order history, pre-filled checkout), **SMTP / file mailers** and **S3-compatible storage**.
-
-Upgrading an existing database: `npm run db:push` then `npm run db:backfill` (fills `searchText`, `textKey` and
-aggregates without deleting data), or simply re-seed.
 
 ## How to run locally
 
@@ -224,11 +176,10 @@ console; set `MAILER=file` to collect them in `tmp/mail-outbox.jsonl` or `MAILER
 10. Optional Stripe: set `STRIPE_SECRET_KEY` (test key) → "Platební karta (Stripe)" appears at checkout; for webhooks
     also set `STRIPE_WEBHOOK_SECRET` and forward events to `/api/stripe/webhook`.
 
-## Ideas / not implemented (outside the spec)
+## Out of scope
 
-Deliberately left out because the spec does not ask for them (no features outside the spec without a
-reason): DNS-style bundles, warranty add-ons, instalment prices, user photo strip, news/blog cards, a customer list
-in the CMS.
+Not implemented on purpose (out of scope): product bundles, warranty add-ons, instalment prices, customer photo
+galleries, news/blog, a customer list in the CMS.
 
 ## Known issues / still open
 
@@ -238,7 +189,7 @@ in the CMS.
   `eslint-config-next`. Plan these as a separate upgrade; Prisma 7 also needs `prisma.config.ts` (the
   `package.json#prisma` key is deprecated) and driver adapters.
 - Uploads that are added in the editor but never saved remain in storage (only previously saved files are cleaned).
-- `npm run db:reset` resets the dev database. Tests use
-  their own throwaway DB files (`prisma/test.db`, `prisma/e2e.db`).
+- Tests use their own throwaway database files (`prisma/test.db`, `prisma/e2e.db`); `npm run db:reset` resets the
+  dev database.
 - Rate-limit buckets are cleaned opportunistically; very high traffic deployments may prefer Redis behind the same
   function signature.
